@@ -68,7 +68,9 @@ def collect_metadata(
     px4_image: str | None = None,
 ) -> dict[str, Any]:
     revision = _git_value("rev-parse", "HEAD")
-    status = _git_value("status", "--porcelain")
+    status = _git_value(
+        "status", "--porcelain", "--", ".", ":(exclude)results/**",
+    )
     try:
         pymavlink_version = metadata.version("pymavlink")
     except metadata.PackageNotFoundError:
