@@ -1,0 +1,72 @@
+{
+  "campaign_safety": {
+    "clock_skew": 1.0,
+    "crossing": 1.0,
+    "gps_jump": 1.0,
+    "head_on": 1.0,
+    "limited_dynamics": 1.0,
+    "multi_threat": 1.0,
+    "node_restart": 1.0,
+    "noisy": 1.0,
+    "partition": 1.0,
+    "telemetry_dropout": 1.0,
+    "vertical_clear": 1.0
+  },
+  "gates": {
+    "campaign_safety": true,
+    "deterministic_scenarios": true,
+    "endurance_delivery": true,
+    "fixed_point_equivalence": true,
+    "network_delivery": true,
+    "network_latency": true,
+    "protocol_crc": true,
+    "px4_actual_separation": true,
+    "px4_closed_loop": true,
+    "px4_lifecycle": true,
+    "rtl_behavior": true,
+    "rtl_synthesis": true,
+    "uncertainty_precision": true,
+    "uncertainty_recall": true
+  },
+  "passed": 14,
+  "recommended_network": {
+    "delivery_ratio_mean": 0.76,
+    "half_duplex_losses_mean": 96.0,
+    "latency_ms_mean": 507.9469898360256,
+    "mac": "csma",
+    "minimum_separation_worst_m": 7.621292541295172,
+    "phy": "fast",
+    "routing": "flooding",
+    "seeds": 5,
+    "single_channel_capacity_pps": 25.95514950166113,
+    "telemetry_interval_s": 1.0,
+    "time_on_air_ms": 38.528,
+    "transmission_attempts_mean": 433.4
+  },
+  "remaining_hardware_only": [
+    "RF range, interference, antenna placement and regional duty-cycle compliance",
+    "GNSS multipath/jamming behavior with the selected receiver and airframe",
+    "FPGA timing closure, power, pin constraints and board-level I/O",
+    "Autopilot/FPGA electrical integration and real flight-controller failsafes",
+    "Propulsion, battery, vibration, mass, weather and flight-test validation"
+  ],
+  "status": "PASS",
+  "total": 14,
+  "tracking": {
+    "cases": 10000,
+    "filtered_uncertainty_aware": {
+      "false_negative": 450,
+      "false_positive": 2526,
+      "precision": 0.6414987226795344,
+      "recall": 0.9094567404426559,
+      "true_positive": 4520
+    },
+    "raw": {
+      "false_negative": 1292,
+      "false_positive": 592,
+      "precision": 0.8613583138173302,
+      "recall": 0.7400402414486922,
+      "true_positive": 3678
+    }
+  }
+}

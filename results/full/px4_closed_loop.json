@@ -1,0 +1,82 @@
+{
+  "actual_lateral_response_m": 18.28571827566791,
+  "actual_minimum_separation_m": 7.385356974079542,
+  "alarm_time_s": 1.1140799899585545,
+  "checks": {
+    "actual_separation_at_least_4m": true,
+    "arm_accepted": true,
+    "disarm_accepted": true,
+    "land_accepted": true,
+    "landed_state_observed": true,
+    "lora_packets_delivered": true,
+    "mavlink_command_streamed": true,
+    "offboard_observed": true,
+    "planner_selected_maneuver": true,
+    "px4_lateral_response_at_least_1m": true,
+    "takeoff_accepted": true,
+    "uncertainty_aware_alarm": true
+  },
+  "command_time_s": 1.114627464208752,
+  "final_airborne_position": [
+    -9.076586723327637,
+    -15.42432689666748,
+    -3.373626708984375,
+    -1.5596082210540771,
+    -2.172268867492676,
+    0.0879836231470108
+  ],
+  "image": "px4io/px4-sitl@sha256:01866d912ac22ca6119a996b830cf628a6d47dfb60fdccc41cd9f44b62935a44",
+  "landed_position": [
+    -10.889854431152344,
+    -18.16507911682129,
+    0.3712158203125,
+    -0.20484484732151031,
+    0.29298079013824463,
+    -0.01690954715013504
+  ],
+  "metadata": {
+    "command": "tools/run_px4_closed_loop.py",
+    "generated_at_utc": "2026-09-04T15:05:45.725799+00:00",
+    "git": {
+      "dirty": null,
+      "revision": null
+    },
+    "parameters": {
+      "seed": 401
+    },
+    "px4_image": "px4io/px4-sitl@sha256:01866d912ac22ca6119a996b830cf628a6d47dfb60fdccc41cd9f44b62935a44",
+    "runtime": {
+      "iverilog": "Icarus Verilog version 12.0 (stable) ()",
+      "platform": "Linux-6.8.0-53-generic-x86_64-with-glibc2.39",
+      "pymavlink": "2.4.49",
+      "python": "3.12.3",
+      "yosys": "Yosys 0.33 (git sha1 2584903a060)"
+    },
+    "schema_version": 1,
+    "seeds": [
+      401
+    ],
+    "source_sha256": "9eee2502565f8e3737516791e4bd1989a7b57844821d1daaeccfcbbab87c1313"
+  },
+  "network": {
+    "delivered": 9,
+    "dropped": 0,
+    "mean_latency_ms": 67.0950841482369,
+    "profile": "fast",
+    "sent": 9,
+    "time_on_air_ms": 38.528
+  },
+  "passed": 12,
+  "planner_predicted_separation_m": 9.537132821311449,
+  "scenario_origin": [
+    0.18642275035381317,
+    0.34159040451049805,
+    -2.982330322265625,
+    -0.022576630115509033,
+    -0.20793437957763672,
+    -0.03575042635202408
+  ],
+  "seed": 401,
+  "selected_maneuver": "right",
+  "total": 12
+}

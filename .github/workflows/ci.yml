@@ -1,0 +1,37 @@
+name: verification
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  software-and-rtl:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install RTL tools
+        run: sudo apt-get update && sudo apt-get install -y iverilog yosys
+      - name: Install project
+        run: python -m pip install -e .
+      - name: Unit and integration tests
+        run: make test
+      - name: CI verification campaign
+        run: make verify-ci
+      - name: Synthesis elaboration
+        run: make synth
+      - name: Build dashboard
+        run: make visualize
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: verification-evidence
+          path: |
+            results/ci/
+            results/full/fpga_synthesis.json
+            results/full/dashboard.html
