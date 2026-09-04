@@ -228,10 +228,10 @@
   },
   "metadata": {
     "command": "drone-sims verify",
-    "generated_at_utc": "2026-09-04T15:03:17.623156+00:00",
+    "generated_at_utc": "2026-09-04T15:13:57.974588+00:00",
     "git": {
-      "dirty": null,
-      "revision": null
+      "dirty": false,
+      "revision": "eb2e7b10bda9daf4471669195ee4b4f74d6d430b"
     },
     "parameters": {
       "campaign_seeds": 100,
@@ -351,7 +351,7 @@
       99,
       100
     ],
-    "source_sha256": "d8a7ab707a40fff85718f88ddd0ff416e9e0ce96629cf5d1a027bcf15dbeb852"
+    "source_sha256": "caab53cf774f6ad69b81c993a33872a52436ec04cff9c36d713f4a6a3a77386f"
   },
   "network_and_system_campaign": {
     "minimum_separation_requirement_m": 4.0,
@@ -557,30 +557,30 @@
   },
   "px4_sitl": {
     "after_avoidance_local_position": [
-      0.334834486246109,
-      4.3071489334106445,
-      -2.913818359375,
-      0.021633783355355263,
-      1.2398689985275269,
-      -0.015403836034238338
+      0.3006816506385803,
+      4.011491298675537,
+      -2.894683837890625,
+      0.009010066278278828,
+      1.2366104125976562,
+      -0.04452028125524521
     ],
     "airborne_local_position": [
-      0.07972830533981323,
-      -0.07209321111440659,
-      -2.96270751953125,
-      -0.07528505474328995,
-      0.05708135664463043,
-      -0.02552586980164051
+      0.056990545243024826,
+      -0.15420006215572357,
+      -2.9603271484375,
+      -0.06511768698692322,
+      0.09481126815080643,
+      -0.0280621200799942
     ],
-    "altitude_gain_m": 2.95574951171875,
+    "altitude_gain_m": 2.955810546875,
     "arm_ack": 0,
     "before_avoidance_local_position": [
-      0.11206876486539841,
-      -0.03356572613120079,
-      -3.004669189453125,
-      -0.061381421983242035,
-      -0.044459059834480286,
-      0.0008460972458124161
+      0.10196412354707718,
+      -0.13187861442565918,
+      -2.997894287109375,
+      -0.057380326092243195,
+      0.00918037910014391,
+      -0.008111908100545406
     ],
     "checks": {
       "arm_accepted": true,
@@ -596,27 +596,47 @@
       "takeoff_accepted": true,
       "takeoff_altitude_gain_at_least_1m": true
     },
-    "commanded_takeoff_altitude_amsl_m": 492.425,
+    "commanded_takeoff_altitude_amsl_m": 492.423,
     "disarm_ack": 0,
-    "image": "px4io/px4-sitl:latest",
+    "image": "px4io/px4-sitl@sha256:01866d912ac22ca6119a996b830cf628a6d47dfb60fdccc41cd9f44b62935a44",
     "initial_local_position": [
-      -0.022552216425538063,
-      -0.014222970232367516,
-      -0.0069580078125,
-      0.006078039761632681,
-      -0.0024468007031828165,
-      0.003808361943811178
+      -0.021914152428507805,
+      -0.01446338277310133,
+      -0.0045166015625,
+      0.00450233556330204,
+      -0.0029482515528798103,
+      0.0037103062495589256
     ],
     "land_ack": 0,
     "landed_local_position": [
-      0.5938900709152222,
-      5.90401554107666,
-      0.139312744140625,
-      0.040856536477804184,
-      0.40674063563346863,
-      0.08089861273765564
+      0.5555934309959412,
+      5.584234237670898,
+      0.13275146484375,
+      0.056767500936985016,
+      0.40391993522644043,
+      0.05981862545013428
     ],
-    "lateral_response_m": 4.346427075447574,
+    "lateral_response_m": 4.1481324583920385,
+    "metadata": {
+      "command": "tools/run_px4_sitl.py",
+      "generated_at_utc": "2026-09-04T15:11:01.305717+00:00",
+      "git": {
+        "dirty": false,
+        "revision": "385d59665dfdf4d30484a4dfbaa2213f32bb8f75"
+      },
+      "parameters": {},
+      "px4_image": "px4io/px4-sitl@sha256:01866d912ac22ca6119a996b830cf628a6d47dfb60fdccc41cd9f44b62935a44",
+      "runtime": {
+        "iverilog": "Icarus Verilog version 12.0 (stable) ()",
+        "platform": "Linux-6.8.0-53-generic-x86_64-with-glibc2.39",
+        "pymavlink": "2.4.49",
+        "python": "3.12.3",
+        "yosys": "Yosys 0.33 (git sha1 2584903a060)"
+      },
+      "schema_version": 1,
+      "seeds": [],
+      "source_sha256": "caab53cf774f6ad69b81c993a33872a52436ec04cff9c36d713f4a6a3a77386f"
+    },
     "passed": 12,
     "takeoff_ack": 0,
     "total": 12

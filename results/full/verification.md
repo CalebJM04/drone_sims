@@ -52,7 +52,7 @@ Deterministic acceptance: **13/13 passed**
 
 - Lifecycle checks: **12/12 passed**
 - Simulated takeoff altitude gain: 2.96 m
-- Response to streamed lateral avoidance command: 4.35 m
+- Response to streamed lateral avoidance command: 4.15 m
 - Heartbeat, telemetry, arm, takeoff, offboard, lateral response, land, on-ground state, and disarm were observed through live MAVLink.
 
 ## External integration readiness

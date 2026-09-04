@@ -1,10 +1,10 @@
 {
   "metadata": {
     "command": "tools/run_synthesis.py",
-    "generated_at_utc": "2026-09-04T15:04:08.770131+00:00",
+    "generated_at_utc": "2026-09-04T15:10:13.155750+00:00",
     "git": {
-      "dirty": null,
-      "revision": null
+      "dirty": false,
+      "revision": "385d59665dfdf4d30484a4dfbaa2213f32bb8f75"
     },
     "parameters": {},
     "px4_image": null,
@@ -17,7 +17,7 @@
     },
     "schema_version": 1,
     "seeds": [],
-    "source_sha256": "9eee2502565f8e3737516791e4bd1989a7b57844821d1daaeccfcbbab87c1313"
+    "source_sha256": "caab53cf774f6ad69b81c993a33872a52436ec04cff9c36d713f4a6a3a77386f"
   },
   "modules": {
     "collision_predictor": {

@@ -23,7 +23,7 @@ Overall simulated status: **PASS (14/14 gates)**
 
 - fast LoRa profile, CSMA, flooding routing
 - 1.0 s telemetry; 38.528 ms/frame
-- Mean PDR 0.760; mean latency 507.9 ms
+- Mean PDR 0.778; mean latency 515.7 ms
 
 ## Hardware-only work still required
 
