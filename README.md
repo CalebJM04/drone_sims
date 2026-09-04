@@ -33,12 +33,12 @@ cd /home/caleb/school/401/drone_sims
 python3 -m venv .venv
 .venv/bin/python -m pip install -e '.[sitl]'
 make test
-make verify
 make rtl
 make synth
 make network-matrix
 make px4-sitl
 make px4-closed-loop
+make verify
 make readiness
 make visualize
 ```
@@ -75,7 +75,7 @@ compiled RTL vectors, 1,500 complete scenario runs, and three 300-second enduran
 - RTL passed the parser/CRC/table integration test and 5,000 randomized predictor
   vectors; all three modules pass Yosys elaboration and synthesis checks.
 - Basic PX4 SIH passed 12/12 lifecycle/control checks. The integrated LoRa-to-PX4
-  run also passed 12/12 and maintained 7.39 m measured separation against the
+  run also passed 12/12 and maintained 6.94 m measured separation against the
   4 m operational gate.
 
 Generated reports include their UTC time, source SHA-256, exact seeds, parameters,
