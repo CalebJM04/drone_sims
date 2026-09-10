@@ -1,0 +1,55 @@
+{
+  "companion_non_json_output": [],
+  "companion_returncode": 0,
+  "companion_snapshots": 84,
+  "elapsed_s": 418.0,
+  "estimated_delivery_ratio": 0.997585,
+  "event": "soak_summary",
+  "fake_px4_non_json_output": [],
+  "fake_px4_returncode": 0,
+  "metadata": {
+    "command": "tools/soak_bench_node.py",
+    "generated_at_utc": "2026-09-10T18:37:46.162906+00:00",
+    "git": {
+      "dirty": false,
+      "revision": "192c1b479975b5f932d565766092936c5b8b5e42"
+    },
+    "parameters": {
+      "config": "config/bench.node2.toml",
+      "duration_s": 3600.0,
+      "minimum_delivery_ratio": 0.95,
+      "node_id": 2
+    },
+    "px4_image": null,
+    "runtime": {
+      "platform": "Linux-6.8.0-53-generic-x86_64-with-glibc2.39",
+      "pymavlink": "2.4.49",
+      "python": "3.12.3"
+    },
+    "schema_version": 1,
+    "seeds": [],
+    "source_sha256": "171e4e6c21e8df2ea7ea86ac66c2ac499cba7363e26903bf4b7620d35f643643"
+  },
+  "minimum_delivery_ratio": 0.95,
+  "neighbors": 1,
+  "node": 2,
+  "passed": false,
+  "px4": {
+    "gps_fix_type": 3,
+    "gps_healthy": true,
+    "minimum_gps_fix_type": 3,
+    "target_component": 0,
+    "target_system": 2
+  },
+  "stats": {
+    "commands_sent": 0,
+    "crc_rejections": 0,
+    "duplicates": 0,
+    "forwarded": 0,
+    "protocol_rejections": 0,
+    "received": 413,
+    "risk_events": 0,
+    "stale_own_state_events": 0,
+    "telemetry_sent": 414
+  }
+}

@@ -104,11 +104,22 @@ def main() -> int:
     for reader in readers:
         reader.start()
 
+    interrupted = False
+    interruption_reason: str | None = None
+
+    def request_stop(signum: int, _frame: Any) -> None:
+        nonlocal interrupted, interruption_reason
+        interrupted = True
+        interruption_reason = signal.Signals(signum).name
+
+    signal.signal(signal.SIGTERM, request_stop)
+    if hasattr(signal, "SIGHUP"):
+        signal.signal(signal.SIGHUP, request_stop)
+
     started = time.monotonic()
     next_progress = started + args.progress_interval
-    interrupted = False
     try:
-        while time.monotonic() - started < args.duration:
+        while not interrupted and time.monotonic() - started < args.duration:
             if fake.poll() is not None or companion.poll() is not None:
                 break
             now = time.monotonic()
@@ -132,6 +143,7 @@ def main() -> int:
             time.sleep(0.2)
     except KeyboardInterrupt:
         interrupted = True
+        interruption_reason = "KeyboardInterrupt"
     finally:
         for process in (companion, fake):
             if process.poll() is None:
@@ -185,6 +197,8 @@ def main() -> int:
         ),
         "event": "soak_summary",
         "passed": passed,
+        "interrupted": interrupted,
+        "interruption_reason": interruption_reason,
         "node": args.node_id,
         "elapsed_s": round(elapsed, 1),
         "companion_returncode": companion.returncode,
@@ -204,7 +218,12 @@ def main() -> int:
             json.dumps(result, indent=2, sort_keys=True) + "\n",
             encoding="utf-8",
         )
-    print(json.dumps(result, sort_keys=True), flush=True)
+    try:
+        print(json.dumps(result, sort_keys=True), flush=True)
+    except BrokenPipeError:
+        # The evidence file has already been saved; a closed SSH stdout must not
+        # turn an orderly remote shutdown into an unhandled exception.
+        pass
     return 0 if passed else 1
 
 

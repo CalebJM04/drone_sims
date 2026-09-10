@@ -36,9 +36,12 @@ the companion processes to local UDP MAVLink endpoints and the real serial
 Heltec bridges. Their boot IDs are randomized on every run, packet forwarding
 is disabled, and vehicle control is disabled by default.
 
-## Full-stack soak
+## Optional full-stack soak
 
-Run the following commands simultaneously for a one-hour stationary test:
+The accepted pre-hardware bench record includes two clean partial soak runs. A
+longer run is optional unless later testing exposes a reliability concern. To
+collect additional endurance evidence, run the following commands
+simultaneously for one hour:
 
 ```bash
 .venv/bin/python tools/soak_bench_node.py \

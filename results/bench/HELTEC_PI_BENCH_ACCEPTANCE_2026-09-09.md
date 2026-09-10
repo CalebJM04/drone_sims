@@ -1,6 +1,6 @@
 # Heltec V2/V3 and Raspberry Pi bench acceptance
 
-Date: 2026-09-09
+Date: 2026-09-09 (updated 2026-09-10)
 
 ## Outcome
 
@@ -34,17 +34,26 @@ not flight-hardware acceptance.
 | Emulator-only command path | PASS | Fake Pixhawks received streamed zero and non-zero NED velocity setpoints |
 | PX4 state dropout | PASS | One stale-state event recorded, telemetry paused, then recovered automatically |
 | LoRa peer expiry/recovery | PASS | Neighbor count transitioned 0 -> 1 -> 0 after the six-second expiry window |
-| Software regression suite | PASS | 52/52 unit and integration tests passed |
+| Current software regression suite | PASS | 58/58 unit and integration tests passed on 2026-09-10 |
 | Continuous full-stack soak | PARTIAL | Stopped at 946.2 s for end-of-night cutoff; 936/937 received on node 2, 99.9% PDR, zero error/safety counters |
+| Source-matched full-stack soak repeat | ACCEPTED PARTIAL | Operator ended the planned one-hour run at 418.0 s; node 2 received 413/414 packets (99.76% estimated PDR), retained one neighbor and healthy fake-PX4 GPS, and recorded zero CRC/protocol rejections, stale-state events, risk events, or commands |
 | Raspberry Pi health | PASS | `throttled=0x0`; deployment present; production service disabled/inactive |
 
 The load test supports retaining the current 1 Hz telemetry rate. Five or ten
 hertz per aircraft materially overloads this shared profile and should not be
 used without a different MAC/PHY design.
 
-## Remaining hardware gates
+The repeat soak used revision `192c1b4` with a clean worktree and matching
+source hash on both hosts. Its [machine-readable node 2 record](heltec_pi_soak_node2_2026-09-10.json)
+intentionally has `passed: false` because the requested 3,600-second duration was not completed.
+The remote runner exited with its SSH terminal before persisting a separate
+node 1 summary; no soak, companion, or fake-PX4 processes remained on either
+host afterward. The two partial runs are accepted as sufficient pre-hardware
+endurance evidence. A longer soak is optional and can be revisited if later
+testing exposes a reliability concern.
 
-- Complete the uninterrupted one-hour soak; extend to eight hours if desired.
+## Deferred hardware gates
+
 - Physically separate the radios for indoor/outdoor range and obstruction tests.
 - Perform an actual USB removal/reconnection and Raspberry Pi power-cycle test.
 - Connect Pixhawk TELEM2 and validate electrical wiring, MAVLink setup, heartbeat,
