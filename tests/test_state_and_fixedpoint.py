@@ -46,6 +46,45 @@ class StateTableTests(unittest.TestCase):
         self.assertEqual(table.entries[1].boot_id, 11)
         self.assertEqual(table.entries[1].state.position.x, 2)
 
+    def test_replay_metadata_survives_neighbor_expiry(self) -> None:
+        table = NeighborTable()
+        first = TelemetryFrame.from_state(
+            KinematicState(1, Vec3(1, 0), Vec3(0, 0), 10),
+            sequence=500,
+            boot_id=10,
+        )
+        newer = TelemetryFrame.from_state(
+            KinematicState(1, Vec3(2, 0), Vec3(0, 0), 11),
+            sequence=501,
+            boot_id=10,
+        )
+        replay = TelemetryFrame.from_state(
+            KinematicState(1, Vec3(99, 0), Vec3(0, 0), 10),
+            sequence=500,
+            boot_id=10,
+        )
+        self.assertTrue(table.update(first, 10))
+        self.assertEqual(table.expire(20, 5), [1])
+        self.assertFalse(table.update(replay, 21))
+        self.assertTrue(table.update(newer, 22))
+        self.assertEqual(table.entries[1].state.position.x, 2)
+
+    def test_timestamp_allows_recovery_after_large_sequence_gap(self) -> None:
+        table = NeighborTable()
+        first = TelemetryFrame.from_state(
+            KinematicState(1, Vec3(1, 0), Vec3(0, 0), 1),
+            sequence=10,
+            boot_id=10,
+        )
+        after_long_outage = TelemetryFrame.from_state(
+            KinematicState(1, Vec3(2, 0), Vec3(0, 0), 40_000),
+            sequence=40_010,
+            boot_id=10,
+        )
+        self.assertTrue(table.update(first, 1))
+        self.assertEqual(table.expire(10, 5), [1])
+        self.assertTrue(table.update(after_long_outage, 40_000))
+
 
 class FixedPointTests(unittest.TestCase):
     def test_known_case(self) -> None:

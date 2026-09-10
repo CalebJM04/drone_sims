@@ -21,7 +21,7 @@ def fixed_point_assess(
     safety_distance_cm: int,
     horizon_ms: int,
 ) -> FixedAssessment:
-    """Integer golden model suitable for direct translation to RTL."""
+    """Independent integer model used to catch embedded numeric regressions."""
     pa = [round(value * 100.0) for value in own.position.as_list()]
     pb = [round(value * 100.0) for value in peer.position.as_list()]
     va = [round(value * 100.0) for value in own.velocity.as_list()]
@@ -39,4 +39,3 @@ def fixed_point_assess(
     closest_numerators = [p * 1000 + v * tcpa_ms for p, v in zip(pr, vr)]
     dcpa_cm = math.isqrt(sum(value * value for value in closest_numerators)) // 1000
     return FixedAssessment(tcpa_ms <= horizon_ms and dcpa_cm < safety_distance_cm, tcpa_ms, dcpa_cm)
-

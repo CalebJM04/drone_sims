@@ -24,27 +24,46 @@ class NeighborTable:
         self.rejected_old = 0
         self.evictions = 0
         self._retired_boots: dict[int, list[int]] = {}
+        # Replay metadata deliberately survives state expiry. A radio outage
+        # must not make an old packet look new when the neighbor reappears.
+        self._sessions: dict[int, tuple[int, int, int]] = {}
 
     def update(self, frame: TelemetryFrame, received_at: float) -> bool:
-        old = self.entries.get(frame.source)
-        if old is not None:
-            if frame.boot_id == old.boot_id:
-                if not sequence_is_newer(frame.sequence, old.sequence):
+        session = self._sessions.get(frame.source)
+        retired = self._retired_boots.get(frame.source, [])
+        if session is not None:
+            active_boot, last_sequence, last_timestamp_ms = session
+            if frame.boot_id == active_boot:
+                # Sequence comparison is unambiguous for gaps shorter than half
+                # the uint16 range. A synchronized timestamp also permits clean
+                # recovery after a longer outage without accepting old packets.
+                if not sequence_is_newer(frame.sequence, last_sequence) and (
+                    frame.timestamp_ms <= last_timestamp_ms
+                ):
                     self.rejected_old += 1
                     return False
-            elif frame.boot_id in self._retired_boots.get(frame.source, []):
+            elif frame.boot_id in retired:
                 self.rejected_old += 1
                 return False
             else:
                 retired = self._retired_boots.setdefault(frame.source, [])
-                retired.append(old.boot_id)
+                retired.append(active_boot)
                 del retired[:-8]
+        elif frame.boot_id in retired:
+            self.rejected_old += 1
+            return False
+        old = self.entries.get(frame.source)
         if old is None and len(self.entries) >= self.capacity:
             victim = min(self.entries, key=lambda node: self.entries[node].received_at)
             del self.entries[victim]
             self.evictions += 1
         self.entries[frame.source] = StateEntry(
             frame.to_state(), frame.sequence, frame.boot_id, received_at, frame.hops
+        )
+        self._sessions[frame.source] = (
+            frame.boot_id,
+            frame.sequence,
+            frame.timestamp_ms,
         )
         return True
 

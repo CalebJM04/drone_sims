@@ -1,4 +1,15 @@
 {
+  "companion_service": {
+    "checks": {
+      "common_ned_conversion": true,
+      "corruption_rejected": true,
+      "packet_received_and_forwarded": true,
+      "risk_command_generated": true,
+      "stale_px4_suppresses_commands": true
+    },
+    "passed": 5,
+    "total": 5
+  },
   "deterministic_acceptance": {
     "checks": {
       "aloha_congestion_detected": true,
@@ -206,16 +217,20 @@
       "ready": false,
       "sim_vehicle": null
     },
+    "companion": {
+      "pymavlink": true,
+      "pyserial": true,
+      "ready": true,
+      "serial_devices": [
+        "/dev/serial",
+        "/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0",
+        "/dev/ttyUSB2"
+      ]
+    },
     "docker": {
       "binary": "/usr/bin/docker",
       "socket_accessible": true,
       "socket_exists": true
-    },
-    "fpga": {
-      "available_fallback": "Python fixed-point golden model and CSV vectors",
-      "iverilog": "/usr/bin/iverilog",
-      "ready": true,
-      "verilator": null
     },
     "mavlink": {
       "pymavlink": true
@@ -228,10 +243,10 @@
   },
   "metadata": {
     "command": "drone-sims verify",
-    "generated_at_utc": "2026-09-04T15:13:57.974588+00:00",
+    "generated_at_utc": "2026-09-10T17:32:29.086131+00:00",
     "git": {
-      "dirty": false,
-      "revision": "eb2e7b10bda9daf4471669195ee4b4f74d6d430b"
+      "dirty": true,
+      "revision": "f528174d7264348c0c88c610093f43616ddea1e9"
     },
     "parameters": {
       "campaign_seeds": 100,
@@ -242,11 +257,9 @@
     },
     "px4_image": null,
     "runtime": {
-      "iverilog": "Icarus Verilog version 12.0 (stable) ()",
       "platform": "Linux-6.8.0-53-generic-x86_64-with-glibc2.39",
       "pymavlink": "2.4.49",
-      "python": "3.12.3",
-      "yosys": "Yosys 0.33 (git sha1 2584903a060)"
+      "python": "3.12.3"
     },
     "schema_version": 1,
     "seeds": [
@@ -351,7 +364,7 @@
       99,
       100
     ],
-    "source_sha256": "caab53cf774f6ad69b81c993a33872a52436ec04cff9c36d713f4a6a3a77386f"
+    "source_sha256": "44477bac33c5659505fae89089606075e9dd900d6aca2671eb056c9a3690c8f1"
   },
   "network_and_system_campaign": {
     "minimum_separation_requirement_m": 4.0,
@@ -557,30 +570,30 @@
   },
   "px4_sitl": {
     "after_avoidance_local_position": [
-      0.3006816506385803,
-      4.011491298675537,
-      -2.894683837890625,
-      0.009010066278278828,
-      1.2366104125976562,
-      -0.04452028125524521
+      0.33616235852241516,
+      4.278282642364502,
+      -2.894134521484375,
+      0.004856939427554607,
+      1.2472926378250122,
+      -0.046304017305374146
     ],
     "airborne_local_position": [
-      0.056990545243024826,
-      -0.15420006215572357,
-      -2.9603271484375,
-      -0.06511768698692322,
-      0.09481126815080643,
-      -0.0280621200799942
+      0.07028698176145554,
+      -0.07913788408041,
+      -2.95208740234375,
+      -0.06589503586292267,
+      0.06381474435329437,
+      -0.0316745862364769
     ],
-    "altitude_gain_m": 2.955810546875,
+    "altitude_gain_m": 2.947967529296875,
     "arm_ack": 0,
     "before_avoidance_local_position": [
-      0.10196412354707718,
-      -0.13187861442565918,
-      -2.997894287109375,
-      -0.057380326092243195,
-      0.00918037910014391,
-      -0.008111908100545406
+      0.11235236376523972,
+      -0.03753103315830231,
+      -2.998291015625,
+      -0.05955461785197258,
+      -0.020471500232815742,
+      -0.007949765771627426
     ],
     "checks": {
       "arm_accepted": true,
@@ -596,56 +609,48 @@
       "takeoff_accepted": true,
       "takeoff_altitude_gain_at_least_1m": true
     },
-    "commanded_takeoff_altitude_amsl_m": 492.423,
+    "commanded_takeoff_altitude_amsl_m": 492.422,
     "disarm_ack": 0,
     "image": "px4io/px4-sitl@sha256:01866d912ac22ca6119a996b830cf628a6d47dfb60fdccc41cd9f44b62935a44",
     "initial_local_position": [
-      -0.021914152428507805,
-      -0.01446338277310133,
-      -0.0045166015625,
-      0.00450233556330204,
-      -0.0029482515528798103,
-      0.0037103062495589256
+      -0.023905113339424133,
+      -0.01417465042322874,
+      -0.004119873046875,
+      0.0036993478424847126,
+      -0.00247602304443717,
+      0.0024165664799511433
     ],
     "land_ack": 0,
     "landed_local_position": [
-      0.5555934309959412,
-      5.584234237670898,
-      0.13275146484375,
-      0.056767500936985016,
-      0.40391993522644043,
-      0.05981862545013428
+      0.6013610363006592,
+      5.921146392822266,
+      0.1475830078125,
+      0.04772787168622017,
+      0.4025909900665283,
+      0.0613325759768486
     ],
-    "lateral_response_m": 4.1481324583920385,
+    "lateral_response_m": 4.3216129622610655,
     "metadata": {
       "command": "tools/run_px4_sitl.py",
-      "generated_at_utc": "2026-09-04T15:11:01.305717+00:00",
+      "generated_at_utc": "2026-09-10T17:31:18.357356+00:00",
       "git": {
-        "dirty": false,
-        "revision": "385d59665dfdf4d30484a4dfbaa2213f32bb8f75"
+        "dirty": true,
+        "revision": "f528174d7264348c0c88c610093f43616ddea1e9"
       },
       "parameters": {},
       "px4_image": "px4io/px4-sitl@sha256:01866d912ac22ca6119a996b830cf628a6d47dfb60fdccc41cd9f44b62935a44",
       "runtime": {
-        "iverilog": "Icarus Verilog version 12.0 (stable) ()",
         "platform": "Linux-6.8.0-53-generic-x86_64-with-glibc2.39",
         "pymavlink": "2.4.49",
-        "python": "3.12.3",
-        "yosys": "Yosys 0.33 (git sha1 2584903a060)"
+        "python": "3.12.3"
       },
       "schema_version": 1,
       "seeds": [],
-      "source_sha256": "caab53cf774f6ad69b81c993a33872a52436ec04cff9c36d713f4a6a3a77386f"
+      "source_sha256": "44477bac33c5659505fae89089606075e9dd900d6aca2671eb056c9a3690c8f1"
     },
     "passed": 12,
     "takeoff_ack": 0,
     "total": 12
-  },
-  "rtl_execution": {
-    "available": true,
-    "cases": 5000,
-    "output": "PASS: 5000 RTL vectors\nPASS: packet parser, CRC, state table, reboot/replay handling\n/home/caleb/school/401/drone_sims/rtl/tb_packet_pipeline.sv:80: $finish called at 842000 (1ps)\n/home/caleb/school/401/drone_sims/rtl/collision_predictor.sv:17: sorry: constant selects in always_* processes are not currently supported (all bits will be included).",
-    "passed": true
   },
   "tracking": {
     "cases": 25000,

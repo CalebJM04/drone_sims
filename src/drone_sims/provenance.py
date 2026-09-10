@@ -42,7 +42,7 @@ def _git_value(*arguments: str) -> str | None:
 def source_digest() -> str:
     """Hash every input that can affect generated verification evidence."""
 
-    roots = ("src", "rtl", "tools", "requirements")
+    roots = ("src", "tools", "requirements", "config", "deploy")
     files: list[Path] = [PROJECT_ROOT / "pyproject.toml", PROJECT_ROOT / "Makefile"]
     for root in roots:
         files.extend(
@@ -89,8 +89,6 @@ def collect_metadata(
         "runtime": {
             "python": platform.python_version(),
             "platform": platform.platform(),
-            "iverilog": _command_version(["iverilog", "-V"]),
-            "yosys": _command_version(["yosys", "-V"]),
             "pymavlink": pymavlink_version,
         },
         "px4_image": px4_image,

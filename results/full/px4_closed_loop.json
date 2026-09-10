@@ -1,7 +1,7 @@
 {
-  "actual_lateral_response_m": 17.547238494767974,
-  "actual_minimum_separation_m": 6.936043718375373,
-  "alarm_time_s": 1.1145355561748147,
+  "actual_lateral_response_m": 17.888579776282658,
+  "actual_minimum_separation_m": 8.185120531494807,
+  "alarm_time_s": 1.1141575970686972,
   "checks": {
     "actual_separation_at_least_4m": true,
     "arm_accepted": true,
@@ -16,47 +16,45 @@
     "takeoff_accepted": true,
     "uncertainty_aware_alarm": true
   },
-  "command_time_s": 1.115089484024793,
+  "command_time_s": 1.1146001191809773,
   "final_airborne_position": [
-    -1.973179578781128,
-    -17.637714385986328,
-    -2.900848388671875,
-    -0.3612158000469208,
-    -2.7360148429870605,
-    0.04750712215900421
+    -14.669904708862305,
+    10.0714693069458,
+    -3.145751953125,
+    -2.3193790912628174,
+    1.497377872467041,
+    0.03325662016868591
   ],
   "image": "px4io/px4-sitl@sha256:01866d912ac22ca6119a996b830cf628a6d47dfb60fdccc41cd9f44b62935a44",
   "landed_position": [
-    -2.5114023685455322,
-    -22.029794692993164,
-    -0.418487548828125,
-    -0.16288740932941437,
-    0.32501721382141113,
-    -0.18512070178985596
+    -17.51451301574707,
+    11.60975456237793,
+    -0.088287353515625,
+    0.3495217263698578,
+    0.6559496521949768,
+    -0.10771768540143967
   ],
   "metadata": {
     "command": "tools/run_px4_closed_loop.py",
-    "generated_at_utc": "2026-09-04T15:11:43.267195+00:00",
+    "generated_at_utc": "2026-09-10T17:32:00.922440+00:00",
     "git": {
-      "dirty": false,
-      "revision": "385d59665dfdf4d30484a4dfbaa2213f32bb8f75"
+      "dirty": true,
+      "revision": "f528174d7264348c0c88c610093f43616ddea1e9"
     },
     "parameters": {
       "seed": 401
     },
     "px4_image": "px4io/px4-sitl@sha256:01866d912ac22ca6119a996b830cf628a6d47dfb60fdccc41cd9f44b62935a44",
     "runtime": {
-      "iverilog": "Icarus Verilog version 12.0 (stable) ()",
       "platform": "Linux-6.8.0-53-generic-x86_64-with-glibc2.39",
       "pymavlink": "2.4.49",
-      "python": "3.12.3",
-      "yosys": "Yosys 0.33 (git sha1 2584903a060)"
+      "python": "3.12.3"
     },
     "schema_version": 1,
     "seeds": [
       401
     ],
-    "source_sha256": "caab53cf774f6ad69b81c993a33872a52436ec04cff9c36d713f4a6a3a77386f"
+    "source_sha256": "44477bac33c5659505fae89089606075e9dd900d6aca2671eb056c9a3690c8f1"
   },
   "network": {
     "delivered": 9,
@@ -67,14 +65,14 @@
     "time_on_air_ms": 38.528
   },
   "passed": 12,
-  "planner_predicted_separation_m": 8.513092858751579,
+  "planner_predicted_separation_m": 9.66371038469468,
   "scenario_origin": [
-    0.17069518566131592,
-    -0.22193476557731628,
-    -2.963836669921875,
-    -0.1209261417388916,
-    0.07334567606449127,
-    0.02820119448006153
+    0.09279684722423553,
+    -0.031200101599097252,
+    -3.13885498046875,
+    -0.04091181606054306,
+    0.21140620112419128,
+    -0.016782883554697037
   ],
   "seed": 401,
   "selected_maneuver": "right",

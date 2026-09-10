@@ -4,5 +4,6 @@ __pycache__/
 *.egg-info/
 build/
 dist/
+.pio/
 results/quick/
 results/ci/

@@ -5,10 +5,10 @@ import json
 from pathlib import Path
 
 from .campaign import run_campaign
+from .companion_runtime import run_service
 from .integrations import readiness
 from .network_matrix import run_network_matrix
 from .scenarios import CAMPAIGN_SCENARIOS, SCENARIOS, build
-from .vectors import generate_golden_vectors
 from .verification import run_full_verification
 from .visualization import DEFAULT_TRACE_SCENARIOS, build_dashboard
 from .provenance import collect_metadata
@@ -33,11 +33,13 @@ def parser() -> argparse.ArgumentParser:
     verify.add_argument("--workers", type=int, default=1)
     verify.add_argument("--endurance-seeds", type=int, default=3)
     verify.add_argument("--output", type=Path, default=Path("results/full"))
-    vectors = commands.add_parser("vectors", help="generate FPGA/software golden vectors")
-    vectors.add_argument("--count", type=int, default=10_000)
-    vectors.add_argument("--seed", type=int, default=401)
-    vectors.add_argument("--output", type=Path, default=Path("results/fpga_golden_vectors.csv"))
-    commands.add_parser("readiness", help="report optional RTL/SITL tooling")
+    commands.add_parser("readiness", help="report companion-computer and SITL tooling")
+    companion = commands.add_parser("companion", help="run the Raspberry Pi/PX4 companion service")
+    companion.add_argument("--config", type=Path, required=True)
+    companion.add_argument(
+        "--enable-control", action="store_true",
+        help="stream velocity setpoints (never arms or changes PX4 flight mode)",
+    )
     network = commands.add_parser("network-matrix", help="compare exact LoRa PHY/MAC/routing choices")
     network.add_argument("--seeds", type=int, default=3)
     network.add_argument("--output", type=Path, default=Path("results/full/network_matrix.json"))
@@ -80,12 +82,14 @@ def main(argv: list[str] | None = None) -> int:
             args.output.parent.mkdir(parents=True, exist_ok=True)
             args.output.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     elif args.command == "verify":
-        report = run_full_verification(
+        run_full_verification(
             args.cases, args.campaign_seeds, args.workers, args.output, args.endurance_seeds,
         )
-    elif args.command == "vectors":
-        generate_golden_vectors(args.output, args.count, args.seed)
-        report = {"generated": args.count, "output": str(args.output)}
+        print("Verification finished.")
+        print(f"Results: {args.output / 'results.txt'}")
+        return 0
+    elif args.command == "companion":
+        return run_service(args.config, enable_control=args.enable_control)
     elif args.command == "network-matrix":
         report = run_network_matrix(args.seeds)
         args.output.parent.mkdir(parents=True, exist_ok=True)

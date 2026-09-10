@@ -72,6 +72,7 @@ def run(seed: int = 401) -> dict[str, object]:
         latest = scenario_origin
         minimum_separation = math.inf
         planner_separation = None
+        observed_modes = list(modes)
 
         while time.monotonic() < end_at:
             elapsed = time.monotonic() - scenario_start
@@ -131,6 +132,16 @@ def run(seed: int = 401) -> dict[str, object]:
                 message = link.recv_match(blocking=False)
                 if message is not None and message.get_type() == "LOCAL_POSITION_NED":
                     latest = [message.x, message.y, message.z, message.vx, message.vy, message.vz]
+                elif message is not None and message.get_type() == "HEARTBEAT":
+                    observed_modes.append(
+                        (
+                            (int(message.custom_mode) >> 16) & 0xFF,
+                            bool(
+                                message.base_mode
+                                & mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED
+                            ),
+                        )
+                    )
                 time.sleep(0.002)
             elapsed = time.monotonic() - scenario_start
             threat_now = Vec3(
@@ -151,7 +162,7 @@ def run(seed: int = 401) -> dict[str, object]:
         checks = {
             "arm_accepted": arm_ack == ACCEPTED,
             "takeoff_accepted": takeoff_ack == ACCEPTED,
-            "offboard_observed": any(mode == 6 for mode, _ in modes),
+            "offboard_observed": any(mode == 6 for mode, _ in observed_modes),
             "lora_packets_delivered": delivered > 0,
             "uncertainty_aware_alarm": alarm_at is not None,
             "planner_selected_maneuver": chosen_name not in (None, "continue"),

@@ -1,0 +1,23 @@
+[Unit]
+Description=Drone collision companion computer (%i)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=notify
+NotifyAccess=main
+User=drone-sims
+Group=drone-sims
+SupplementaryGroups=dialout
+WorkingDirectory=/opt/drone-sims
+ExecStart=/opt/drone-sims/.venv/bin/drone-sims companion --config /etc/drone-sims/%i.toml
+Restart=always
+RestartSec=2
+WatchdogSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+
+[Install]
+WantedBy=multi-user.target

@@ -5,19 +5,18 @@ import json
 from pathlib import Path
 import random
 from statistics import fmean
-import subprocess
-import sys
 from typing import Any
 
 from .campaign import DEFAULT_OPERATIONAL_MINIMUM_SEPARATION_M, run_campaign
 from .collision import KinematicState, Vec3, assess, brute_force_closest_approach, noisy_state
+from .companion import CompanionConfig, CompanionService, global_to_local_ned
 from .fixedpoint import fixed_point_assess
 from .integrations import readiness
 from .protocol import CrcError, ProtocolError, TelemetryFrame, decode, encode
 from .scenarios import CAMPAIGN_SCENARIOS, build
 from .tracking import AlphaBetaTracker, assess_uncertain
-from .vectors import generate_golden_vectors
 from .provenance import collect_metadata
+from .reporting import verification_text
 
 
 def protocol_stress(cases: int, seed: int = 401) -> dict[str, Any]:
@@ -172,6 +171,72 @@ def fixed_point_stress(cases: int, seed: int = 403) -> dict[str, Any]:
     }
 
 
+def companion_stress() -> dict[str, Any]:
+    class Radio:
+        def __init__(self) -> None:
+            self.incoming: list[bytes] = []
+            self.outgoing: list[bytes] = []
+
+        def receive(self) -> list[bytes]:
+            packets, self.incoming = self.incoming, []
+            return packets
+
+        def send(self, payload: bytes) -> None:
+            self.outgoing.append(payload)
+
+        def close(self) -> None:
+            pass
+
+    class Px4:
+        def __init__(self) -> None:
+            self.states: list[KinematicState | None] = [
+                KinematicState(1, Vec3(0, 0, 0), Vec3(1, 0, 0), 0), None,
+            ]
+            self.commands: list[Any] = []
+
+        def receive_state(self, timestamp_s: float) -> KinematicState | None:
+            return self.states.pop(0) if self.states else None
+
+        def send_velocity(self, command: Any, time_boot_ms: int) -> None:
+            self.commands.append((command, time_boot_ms))
+
+        def close(self) -> None:
+            pass
+
+    radio, px4 = Radio(), Px4()
+    peer = TelemetryFrame.from_state(
+        KinematicState(2, Vec3(8, 0, 0), Vec3(-1, 0, 0), 0),
+        sequence=1,
+        boot_id=2,
+    )
+    valid = encode(peer)
+    corrupt = bytearray(valid)
+    corrupt[-1] ^= 1
+    radio.incoming.extend((valid, bytes(corrupt)))
+    service = CompanionService(
+        CompanionConfig(1, 1, control_enabled=True, own_state_timeout_s=0.2),
+        px4,
+        radio,
+    )
+    service.step(0.0, 0.0)
+    commands_while_fresh = len(px4.commands)
+    service.step(0.3, 0.3)
+    origin = global_to_local_ned(
+        35.001, -83.999, 315,
+        reference_latitude_deg=35,
+        reference_longitude_deg=-84,
+        reference_altitude_m=300,
+    )
+    checks = {
+        "common_ned_conversion": abs(origin.x - 111.32) < 0.2 and abs(origin.z + 15) < 1e-9,
+        "packet_received_and_forwarded": service.stats.received == 1 and service.stats.forwarded == 1,
+        "corruption_rejected": service.stats.crc_rejections == 1,
+        "risk_command_generated": service.stats.risk_events >= 1 and commands_while_fresh == 1,
+        "stale_px4_suppresses_commands": len(px4.commands) == commands_while_fresh,
+    }
+    return {"checks": checks, "passed": sum(checks.values()), "total": len(checks)}
+
+
 def _deterministic_acceptance(
     minimum_separation_m: float = DEFAULT_OPERATIONAL_MINIMUM_SEPARATION_M,
 ) -> dict[str, Any]:
@@ -222,24 +287,6 @@ def _deterministic_acceptance(
     }
 
 
-def _rtl_stress(cases: int, tools_ready: bool) -> dict[str, Any]:
-    if not tools_ready:
-        return {"available": False, "passed": False, "cases": 0, "output": "iverilog/vvp not installed"}
-    project = Path(__file__).resolve().parents[2]
-    completed = subprocess.run(
-        [sys.executable, project / "tools/run_rtl.py", "--cases", str(cases)],
-        text=True,
-        capture_output=True,
-        check=False,
-    )
-    return {
-        "available": True,
-        "passed": completed.returncode == 0,
-        "cases": cases,
-        "output": (completed.stdout + completed.stderr).strip(),
-    }
-
-
 def run_full_verification(
     cases: int,
     campaign_seeds: int,
@@ -270,6 +317,7 @@ def run_full_verification(
         "prediction": prediction_stress(cases),
         "tracking": tracking_stress(cases),
         "fixed_point": fixed_point_stress(cases),
+        "companion_service": companion_stress(),
         "deterministic_acceptance": _deterministic_acceptance(),
         "network_and_system_campaign": run_campaign(list(CAMPAIGN_SCENARIOS), campaign_seeds, workers),
         "endurance_300s": endurance_runs[0],
@@ -282,57 +330,11 @@ def run_full_verification(
                 run["avoidance"]["minimum_separation_m"] for run in endurance_runs
             ),
         },
-        "rtl_execution": _rtl_stress(min(cases, 5000), tools["fpga"]["ready"]),
         "integration_readiness": tools,
     }
     px4_report_path = output_path / "px4_sitl.json"
     if px4_report_path.exists():
         report["px4_sitl"] = json.loads(px4_report_path.read_text(encoding="utf-8"))
-    generate_golden_vectors(output_path / "fpga_golden_vectors.csv", cases)
     (output_path / "verification.json").write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    _write_markdown(report, output_path / "verification.md")
+    (output_path / "results.txt").write_text(verification_text(report), encoding="utf-8")
     return report
-
-
-def _write_markdown(report: dict[str, Any], path: Path) -> None:
-    acceptance = report["deterministic_acceptance"]
-    campaign = report["network_and_system_campaign"]
-    lines = [
-        "# Simulation Verification Report", "",
-        f"Deterministic acceptance: **{acceptance['passed']}/{acceptance['total']} passed**", "",
-        "## Deterministic checks", "",
-    ]
-    lines.extend(f"- {'PASS' if passed else 'FAIL'} — `{name}`" for name, passed in acceptance["checks"].items())
-    lines += ["", "## Stress verification", "",
-        f"- Protocol corruptions detected: {report['protocol']['single_bit_corruptions_detected']}/{report['protocol']['cases']}",
-        f"- Noisy prediction accuracy: {report['prediction']['noisy_accuracy']:.4f}",
-        f"- Noisy prediction precision/recall: {report['prediction']['precision']:.4f} / {report['prediction']['recall']:.4f}",
-        f"- Raw vs filtered uncertainty-aware recall: {report['tracking']['raw']['recall']:.4f} / {report['tracking']['filtered_uncertainty_aware']['recall']:.4f}",
-        f"- Fixed-point classification mismatches away from boundaries: {report['fixed_point']['classification_mismatches']}/{report['fixed_point']['classification_cases_away_from_boundaries']}",
-        f"- Executed RTL vectors: {report['rtl_execution']['cases']} ({'PASS' if report['rtl_execution']['passed'] else 'UNAVAILABLE/FAIL'})",
-        f"- 300-second endurance seeds: {len(report['endurance_campaign']['runs'])}; worst PDR {report['endurance_campaign']['delivery_ratio_min']:.4f}",
-        "", "## Scenario campaign", "",
-        "| Scenario | Runs | Mean PDR | P95 latency (ms) | Worst separation (m) | Avoidance success |", "|---|---:|---:|---:|---:|---:|",
-    ]
-    for name, values in campaign["scenarios"].items():
-        latency = values["latency_ms_p95"]
-        latency_text = "n/a" if latency is None else f"{latency:.1f}"
-        lines.append(f"| {name} | {values['runs']} | {values['delivery_ratio_mean']:.3f} | {latency_text} | {values['minimum_separation_worst_m']:.2f} | {values['safety_distance_success_rate']:.3f} |")
-    integrations = report["integration_readiness"]
-    if "px4_sitl" in report:
-        px4 = report["px4_sitl"]
-        lines += ["", "## Live PX4 SIH", "",
-            f"- Lifecycle checks: **{px4['passed']}/{px4['total']} passed**",
-            f"- Simulated takeoff altitude gain: {px4['altitude_gain_m']:.2f} m",
-            f"- Response to streamed lateral avoidance command: {px4['lateral_response_m']:.2f} m",
-            "- Heartbeat, telemetry, arm, takeoff, offboard, lateral response, land, on-ground state, and disarm were observed through live MAVLink.",
-        ]
-    lines += ["", "## External integration readiness", "",
-        f"- RTL simulator installed: **{integrations['fpga']['ready']}**",
-        f"- Native PX4 + Gazebo installed: **{integrations['px4']['ready']}**",
-        f"- Official PX4 SIH container passed: **{'px4_sitl' in report and report['px4_sitl']['passed'] == report['px4_sitl']['total']}**",
-        f"- ArduPilot SITL installed: **{integrations['ardupilot']['ready']}**",
-        f"- pymavlink installed: **{integrations['mavlink']['pymavlink']}**",
-        "", "Unavailable external tools are reported, not treated as successful simulation.", "",
-    ]
-    path.write_text("\n".join(lines), encoding="utf-8")

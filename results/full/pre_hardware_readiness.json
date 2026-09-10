@@ -12,10 +12,13 @@
     "telemetry_dropout": 1.0,
     "vertical_clear": 1.0
   },
+  "evidence_source_sha256": "44477bac33c5659505fae89089606075e9dd900d6aca2671eb056c9a3690c8f1",
   "gates": {
     "campaign_safety": true,
+    "companion_service": true,
     "deterministic_scenarios": true,
     "endurance_delivery": true,
+    "evidence_source_match": true,
     "fixed_point_equivalence": true,
     "network_delivery": true,
     "network_latency": true,
@@ -23,17 +26,15 @@
     "px4_actual_separation": true,
     "px4_closed_loop": true,
     "px4_lifecycle": true,
-    "rtl_behavior": true,
-    "rtl_synthesis": true,
     "uncertainty_precision": true,
     "uncertainty_recall": true
   },
   "metadata": {
     "command": "drone-sims verify",
-    "generated_at_utc": "2026-09-04T15:13:57.974588+00:00",
+    "generated_at_utc": "2026-09-10T17:32:29.086131+00:00",
     "git": {
-      "dirty": false,
-      "revision": "eb2e7b10bda9daf4471669195ee4b4f74d6d430b"
+      "dirty": true,
+      "revision": "f528174d7264348c0c88c610093f43616ddea1e9"
     },
     "parameters": {
       "campaign_seeds": 100,
@@ -44,11 +45,9 @@
     },
     "px4_image": null,
     "runtime": {
-      "iverilog": "Icarus Verilog version 12.0 (stable) ()",
       "platform": "Linux-6.8.0-53-generic-x86_64-with-glibc2.39",
       "pymavlink": "2.4.49",
-      "python": "3.12.3",
-      "yosys": "Yosys 0.33 (git sha1 2584903a060)"
+      "python": "3.12.3"
     },
     "schema_version": 1,
     "seeds": [
@@ -153,7 +152,7 @@
       99,
       100
     ],
-    "source_sha256": "caab53cf774f6ad69b81c993a33872a52436ec04cff9c36d713f4a6a3a77386f"
+    "source_sha256": "44477bac33c5659505fae89089606075e9dd900d6aca2671eb056c9a3690c8f1"
   },
   "passed": 14,
   "recommended_network": {
@@ -173,8 +172,8 @@
   "remaining_hardware_only": [
     "RF range, interference, antenna placement and regional duty-cycle compliance",
     "GNSS multipath/jamming behavior with the selected receiver and airframe",
-    "FPGA timing closure, power, pin constraints and board-level I/O",
-    "Autopilot/FPGA electrical integration and real flight-controller failsafes",
+    "Raspberry Pi power, thermal, storage and process-watchdog validation",
+    "Companion/PX4 electrical integration and real flight-controller failsafes",
     "Propulsion, battery, vibration, mass, weather and flight-test validation"
   ],
   "status": "PASS",

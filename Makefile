@@ -1,10 +1,14 @@
 PYTHON ?= $(if $(wildcard .venv/bin/python),.venv/bin/python,python3)
+PIO ?= $(if $(wildcard .venv/bin/pio),.venv/bin/pio,pio)
 export PYTHONPATH := src
 
-.PHONY: test verify verify-ci quick scenario vectors rtl synth px4-sitl px4-closed-loop network-matrix readiness visualize clean
+.PHONY: test firmware verify verify-ci quick scenario px4-sitl px4-closed-loop network-matrix readiness visualize clean
 
 test:
 	$(PYTHON) -m unittest discover -s tests -v
+
+firmware:
+	$(PIO) run --project-dir firmware/heltec_bridge
 
 quick:
 	$(PYTHON) -m drone_sims verify --cases 1000 --campaign-seeds 3 --endurance-seeds 1 --output results/quick
@@ -17,15 +21,6 @@ verify:
 
 scenario:
 	$(PYTHON) -m drone_sims scenario head_on --seed 7 --output results/head_on.json
-
-vectors:
-	$(PYTHON) -m drone_sims vectors --count 10000 --output results/fpga_golden_vectors.csv
-
-rtl:
-	$(PYTHON) tools/run_rtl.py --cases 1000
-
-synth:
-	$(PYTHON) tools/run_synthesis.py --output results/full/fpga_synthesis.json
 
 px4-sitl:
 	$(PYTHON) tools/run_px4_sitl.py --output results/full/px4_sitl.json

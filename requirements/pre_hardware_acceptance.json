@@ -9,8 +9,6 @@
   "network_recommendation_delivery_ratio_min": 0.70,
   "network_recommendation_latency_ms_max": 1500,
   "minimum_separation_m": 4.0,
-  "rtl_required": true,
-  "synthesis_required": true,
   "px4_lifecycle_required": true,
   "px4_closed_loop_required": true
 }

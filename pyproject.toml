@@ -11,6 +11,8 @@ dependencies = []
 
 [project.optional-dependencies]
 sitl = ["pymavlink"]
+hardware = ["pymavlink", "pyserial"]
+firmware = ["platformio==6.2.0"]
 
 [project.scripts]
 drone-sims = "drone_sims.cli:main"

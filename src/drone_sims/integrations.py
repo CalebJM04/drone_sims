@@ -10,12 +10,20 @@ from typing import Any
 
 def readiness() -> dict[str, Any]:
     docker_socket = Path("/var/run/docker.sock")
+    pymavlink_ready = importlib.util.find_spec("pymavlink") is not None
+    pyserial_ready = importlib.util.find_spec("serial") is not None
+    serial_devices = {
+        path
+        for pattern in ("serial*", "ttyUSB*", "ttyACM*")
+        for path in Path("/dev").glob(pattern)
+    }
+    serial_devices.update(Path("/dev/serial/by-id").glob("*"))
     return {
-        "fpga": {
-            "iverilog": shutil.which("iverilog"),
-            "verilator": shutil.which("verilator"),
-            "ready": bool(shutil.which("iverilog") or shutil.which("verilator")),
-            "available_fallback": "Python fixed-point golden model and CSV vectors",
+        "companion": {
+            "pymavlink": pymavlink_ready,
+            "pyserial": pyserial_ready,
+            "serial_devices": sorted(str(path) for path in serial_devices),
+            "ready": pymavlink_ready and pyserial_ready,
         },
         "px4": {
             "px4_binary": shutil.which("px4"),
@@ -27,7 +35,7 @@ def readiness() -> dict[str, Any]:
             "ready": bool(shutil.which("sim_vehicle.py")),
         },
         "mavlink": {
-            "pymavlink": importlib.util.find_spec("pymavlink") is not None,
+            "pymavlink": pymavlink_ready,
         },
         "docker": {
             "binary": shutil.which("docker"),

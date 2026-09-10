@@ -93,6 +93,8 @@ def assess_uncertain(
     horizon: float,
     max_age: float,
     sigma_multiplier: float = 2.5,
+    own_position_sigma: float = 0.0,
+    own_velocity_sigma: float = 0.0,
 ) -> UncertainAssessment:
     nominal = assess(
         own,
@@ -103,7 +105,13 @@ def assess_uncertain(
         max_age=max_age,
     )
     prediction_time = max(0.0, min(horizon, nominal.tcpa or 0.0))
-    margin = sigma_multiplier * peer.uncertainty_at(now, prediction_time)
+    own_uncertainty = math.sqrt(
+        own_position_sigma**2 + (prediction_time * own_velocity_sigma) ** 2
+    )
+    relative_uncertainty = math.hypot(
+        peer.uncertainty_at(now, prediction_time), own_uncertainty
+    )
+    margin = sigma_multiplier * relative_uncertainty
     effective = safety_distance + margin
     conservative = assess(
         own,
@@ -114,4 +122,3 @@ def assess_uncertain(
         max_age=max_age,
     )
     return UncertainAssessment(nominal, conservative, effective, margin)
-

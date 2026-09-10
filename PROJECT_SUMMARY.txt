@@ -1,32 +1,15 @@
-Drone Project Simulation Summary
+Drone Project Summary
 
-We built a comprehensive pre-hardware simulation and verification suite in:
-/home/caleb/school/401/drone_sims
+I built a simulation for a drone collision avoidance system. It models how the
+drones share their location, detect a possible collision, and choose a safer
+direction. A Raspberry Pi companion service now reads global position and
+velocity from PX4, converts every drone into a shared local coordinate frame,
+exchanges LoRa telemetry, and streams bounded avoidance velocity commands.
 
-It includes exact LoRa airtime and network modeling, multi-hop routing, packet
-loss and interference, a frozen telemetry protocol with CRC and reboot
-protection, uncertainty-aware tracking, multi-threat collision avoidance,
-PX4/MAVLink integration, FPGA packet parsing, neighbor-state management and
-collision RTL, plus adversarial scenarios such as GPS jumps, clock skew,
-telemetry outages and node restarts.
-
-Testing completed:
-
-- 42 automated tests passed
-- 25,000 protocol corruption tests passed
-- 5,000 FPGA collision vectors passed
-- 1,500 complete scenario runs were executed
-- Three 300-second endurance simulations achieved at least 99.65% packet delivery
-- PX4 lifecycle and closed-loop avoidance each passed 12/12 checks
-- All 14 pre-hardware readiness gates passed
-
-The operational simulated separation requirement is now 4 m, above the 3 m
-collision geometry boundary. The tightest required 100-seed campaign maintained
-4.36 m. A self-contained interactive HTML dashboard visualizes the evidence and
-replays scenario trajectories.
-
-The recommended network configuration is LoRa SF7/BW250, CSMA flooding and
-1 Hz telemetry. The software algorithms and simulation baseline are strong.
-Embedded radio firmware, a board-specific FPGA bitstream, physical RF testing,
-real GNSS calibration, hardware failsafes and controlled flight testing still
-need to be completed before the system is ready for real-world deployment.
+The current software tests pass, including tests with bad radio packets, GPS
+errors, network problems, and missing commands. The service includes stale-PX4
+suppression, duplicate and replay rejection, multi-hop forwarding, configuration
+for serial LoRa or UDP bench testing, and a systemd watchdog unit. A stationary
+two-radio LoRa/Pi bench test passed at the selected 1 Hz rate. It still needs RF
+range and obstruction testing, Raspberry Pi power and thermal validation, real
+Pixhawk/GNSS integration, HIL testing, and flight testing.

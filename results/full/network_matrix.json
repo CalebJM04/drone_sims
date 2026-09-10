@@ -2,10 +2,10 @@
   "frame_size_bytes": 36,
   "metadata": {
     "command": "drone-sims network-matrix",
-    "generated_at_utc": "2026-09-04T15:10:21.597794+00:00",
+    "generated_at_utc": "2026-09-10T17:30:36.930280+00:00",
     "git": {
-      "dirty": false,
-      "revision": "385d59665dfdf4d30484a4dfbaa2213f32bb8f75"
+      "dirty": true,
+      "revision": "f528174d7264348c0c88c610093f43616ddea1e9"
     },
     "parameters": {
       "rows": 36,
@@ -13,11 +13,9 @@
     },
     "px4_image": null,
     "runtime": {
-      "iverilog": "Icarus Verilog version 12.0 (stable) ()",
       "platform": "Linux-6.8.0-53-generic-x86_64-with-glibc2.39",
       "pymavlink": "2.4.49",
-      "python": "3.12.3",
-      "yosys": "Yosys 0.33 (git sha1 2584903a060)"
+      "python": "3.12.3"
     },
     "schema_version": 1,
     "seeds": [
@@ -27,7 +25,7 @@
       4,
       5
     ],
-    "source_sha256": "caab53cf774f6ad69b81c993a33872a52436ec04cff9c36d713f4a6a3a77386f"
+    "source_sha256": "44477bac33c5659505fae89089606075e9dd900d6aca2671eb056c9a3690c8f1"
   },
   "minimum_separation_requirement_m": 4.0,
   "profiles": {
@@ -243,9 +241,9 @@
       "transmission_attempts_mean": 302.2
     },
     {
-      "delivery_ratio_mean": 0.22633333333333333,
-      "half_duplex_losses_mean": 218.6,
-      "latency_ms_mean": 4239.429191202779,
+      "delivery_ratio_mean": 0.22599999999999998,
+      "half_duplex_losses_mean": 217.8,
+      "latency_ms_mean": 4231.729862671343,
       "mac": "csma",
       "minimum_separation_worst_m": 8.120812767205122,
       "phy": "balanced",
@@ -254,7 +252,7 @@
       "single_channel_capacity_pps": 3.74161877394636,
       "telemetry_interval_s": 0.5,
       "time_on_air_ms": 267.264,
-      "transmission_attempts_mean": 503.8
+      "transmission_attempts_mean": 503.6
     },
     {
       "delivery_ratio_mean": 0.35733333333333334,

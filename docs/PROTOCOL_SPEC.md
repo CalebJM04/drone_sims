@@ -45,5 +45,5 @@ The conformance vector uses source `0x1234`, sequence `0xABCD`, boot ID
 d702010105001234abcdbeef000030390000007bfffffe3800000315ff9c00c8fed4bce9
 ```
 
-This byte string is asserted in the unit suite and is the parser/RTL integration
-contract.
+This byte string is asserted in the unit suite and is the software/radio
+integration contract.

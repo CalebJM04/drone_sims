@@ -6,6 +6,9 @@ import json
 from pathlib import Path
 from typing import Any
 
+from drone_sims.provenance import source_digest
+from drone_sims.reporting import final_results_text
+
 
 SAFE_SCENARIOS = (
     "head_on", "noisy", "limited_dynamics", "crossing", "vertical_clear",
@@ -26,9 +29,10 @@ def main() -> int:
     requirements = load(args.requirements)
     verification = load(args.results / "verification.json")
     network = load(args.results / "network_matrix.json")
-    synthesis = load(args.results / "fpga_synthesis.json")
     px4 = load(args.results / "px4_sitl.json")
     closed_loop = load(args.results / "px4_closed_loop.json")
+    current_source_digest = source_digest()
+    evidence = (verification, network, px4, closed_loop)
 
     campaign = verification["network_and_system_campaign"]["scenarios"]
     recommendation = network["recommendation"]
@@ -49,11 +53,15 @@ def main() -> int:
         ) >= requirements["endurance_delivery_ratio_min"],
         "network_delivery": recommendation["delivery_ratio_mean"] >= requirements["network_recommendation_delivery_ratio_min"],
         "network_latency": recommendation["latency_ms_mean"] <= requirements["network_recommendation_latency_ms_max"],
-        "rtl_behavior": verification["rtl_execution"]["passed"],
-        "rtl_synthesis": synthesis["passed"],
+        "companion_service": verification["companion_service"]["passed"] == verification["companion_service"]["total"],
         "px4_lifecycle": px4["passed"] == px4["total"],
         "px4_closed_loop": closed_loop["passed"] == closed_loop["total"],
         "px4_actual_separation": closed_loop["actual_minimum_separation_m"] >= requirements["minimum_separation_m"],
+        "evidence_source_match": all(
+            isinstance(item.get("metadata"), dict)
+            and item["metadata"].get("source_sha256") == current_source_digest
+            for item in evidence
+        ),
     }
     passed = sum(gates.values())
     report = {
@@ -64,35 +72,25 @@ def main() -> int:
         "recommended_network": recommendation,
         "tracking": verification["tracking"],
         "metadata": verification.get("metadata"),
+        "evidence_source_sha256": current_source_digest,
         "campaign_safety": {name: campaign[name]["safety_distance_success_rate"] for name in SAFE_SCENARIOS},
         "remaining_hardware_only": [
             "RF range, interference, antenna placement and regional duty-cycle compliance",
             "GNSS multipath/jamming behavior with the selected receiver and airframe",
-            "FPGA timing closure, power, pin constraints and board-level I/O",
-            "Autopilot/FPGA electrical integration and real flight-controller failsafes",
+            "Raspberry Pi power, thermal, storage and process-watchdog validation",
+            "Companion/PX4 electrical integration and real flight-controller failsafes",
             "Propulsion, battery, vibration, mass, weather and flight-test validation"
         ],
     }
     (args.results / "pre_hardware_readiness.json").write_text(
         json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
-    lines = [
-        "# Pre-hardware readiness", "",
-        f"Overall simulated status: **{report['status']} ({passed}/{len(gates)} gates)**", "",
-        "## Acceptance gates", "",
-    ]
-    lines.extend(f"- {'PASS' if value else 'FAIL'} — `{name}`" for name, value in gates.items())
-    lines += [
-        "", "## Selected network baseline", "",
-        f"- {recommendation['phy']} LoRa profile, {recommendation['mac'].upper()}, {recommendation['routing']} routing",
-        f"- {recommendation['telemetry_interval_s']:.1f} s telemetry; {recommendation['time_on_air_ms']:.3f} ms/frame",
-        f"- Mean PDR {recommendation['delivery_ratio_mean']:.3f}; mean latency {recommendation['latency_ms_mean']:.1f} ms",
-        "", "## Hardware-only work still required", "",
-    ]
-    lines.extend(f"- {item}" for item in report["remaining_hardware_only"])
-    lines += ["", "A PASS means the available software, network, RTL behavioral, synthesis-elaboration, and PX4 SIH gates passed. It is not flight certification.", ""]
-    (args.results / "PRE_HARDWARE_READINESS.md").write_text("\n".join(lines), encoding="utf-8")
-    print(json.dumps(report, indent=2, sort_keys=True))
+    (args.results / "results.txt").write_text(
+        final_results_text(report, verification, network, px4, closed_loop),
+        encoding="utf-8",
+    )
+    print(f"{report['status']}: {passed}/{len(gates)} checks passed")
+    print(f"Results: {args.results / 'results.txt'}")
     return 0 if report["status"] == "PASS" else 1
 
 
