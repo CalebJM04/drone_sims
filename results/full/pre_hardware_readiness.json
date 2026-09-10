@@ -12,7 +12,7 @@
     "telemetry_dropout": 1.0,
     "vertical_clear": 1.0
   },
-  "evidence_source_sha256": "44477bac33c5659505fae89089606075e9dd900d6aca2671eb056c9a3690c8f1",
+  "evidence_source_sha256": "171e4e6c21e8df2ea7ea86ac66c2ac499cba7363e26903bf4b7620d35f643643",
   "gates": {
     "campaign_safety": true,
     "companion_service": true,
@@ -31,10 +31,10 @@
   },
   "metadata": {
     "command": "drone-sims verify",
-    "generated_at_utc": "2026-09-10T17:32:29.086131+00:00",
+    "generated_at_utc": "2026-09-10T18:29:35.029434+00:00",
     "git": {
       "dirty": true,
-      "revision": "f528174d7264348c0c88c610093f43616ddea1e9"
+      "revision": "52d93255e63643e3dc7c05e24058a6ccad494db9"
     },
     "parameters": {
       "campaign_seeds": 100,
@@ -152,7 +152,7 @@
       99,
       100
     ],
-    "source_sha256": "44477bac33c5659505fae89089606075e9dd900d6aca2671eb056c9a3690c8f1"
+    "source_sha256": "171e4e6c21e8df2ea7ea86ac66c2ac499cba7363e26903bf4b7620d35f643643"
   },
   "passed": 14,
   "recommended_network": {

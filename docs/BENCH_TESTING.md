@@ -44,7 +44,8 @@ Run the following commands simultaneously for a one-hour stationary test:
 .venv/bin/python tools/soak_bench_node.py \
   --config config/bench.node2.toml \
   --fake-pixhawk tools/fake_pixhawk.py \
-  --target 127.0.0.1:14551 --node-id 2 --north 100 --duration 3600
+  --target 127.0.0.1:14551 --node-id 2 --north 100 --duration 3600 \
+  --output results/bench/soak-node2.json
 ```
 
 ```bash
@@ -52,8 +53,13 @@ ssh caleb@192.168.50.35 \
   '/opt/drone-sims/.venv/bin/python /home/caleb/drone-sims-deploy/soak_bench_node.py \
   --config /home/caleb/drone-sims-deploy/bench.node1.toml \
   --fake-pixhawk /home/caleb/drone-sims-deploy/fake_pixhawk.py \
-  --target 127.0.0.1:14550 --node-id 1 --north -100 --duration 3600'
+  --target 127.0.0.1:14550 --node-id 1 --north -100 --duration 3600 \
+  --output /home/caleb/drone-sims-deploy/soak-node1.json'
 ```
+
+Each node requires fresh PX4 state, observation-only control, a live neighbor,
+zero protocol/safety errors, and at least 95% estimated peer delivery. The JSON
+output preserves the final counters for the acceptance record.
 
 Never use `--enable-control` with real flight hardware until the separate
 props-off and HIL acceptance gates have passed.

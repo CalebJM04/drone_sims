@@ -17,7 +17,7 @@ Average delay: 516 ms
 
 PX4 basic test: 12/12 passed
 PX4 collision test: 12/12 passed
-PX4 minimum separation: 8.19 m
+PX4 minimum separation: 8.31 m
 
 The software and simulation checks passed. This does not mean the system is ready
 for real flights. Radio range, GNSS, Raspberry Pi power, Pixhawk wiring, and the

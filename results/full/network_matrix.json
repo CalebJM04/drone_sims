@@ -2,10 +2,10 @@
   "frame_size_bytes": 36,
   "metadata": {
     "command": "drone-sims network-matrix",
-    "generated_at_utc": "2026-09-10T17:30:36.930280+00:00",
+    "generated_at_utc": "2026-09-10T18:27:45.442975+00:00",
     "git": {
       "dirty": true,
-      "revision": "f528174d7264348c0c88c610093f43616ddea1e9"
+      "revision": "52d93255e63643e3dc7c05e24058a6ccad494db9"
     },
     "parameters": {
       "rows": 36,
@@ -25,7 +25,7 @@
       4,
       5
     ],
-    "source_sha256": "44477bac33c5659505fae89089606075e9dd900d6aca2671eb056c9a3690c8f1"
+    "source_sha256": "171e4e6c21e8df2ea7ea86ac66c2ac499cba7363e26903bf4b7620d35f643643"
   },
   "minimum_separation_requirement_m": 4.0,
   "profiles": {
