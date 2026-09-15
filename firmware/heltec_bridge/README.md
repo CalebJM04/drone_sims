@@ -1,5 +1,8 @@
 # Heltec V2/V3 LoRa firmware
 
+> Optional future-integration component: physical radios are not required by the
+> current software-only demonstration or acceptance criteria.
+
 This project provides board-specific builds from one source for the Heltec WiFi
 LoRa 32 V2 (SX1276) and V3 (SX1262). The initial `*_test` environments transmit
 and receive the project's exact 36-byte telemetry frame and emit JSON Lines at

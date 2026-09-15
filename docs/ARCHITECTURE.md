@@ -1,10 +1,11 @@
 # Architecture
 
-The package separates interfaces that should remain stable when simulated
-components are replaced by hardware:
+The primary system is a software-only network testbed. Its interfaces also keep
+future hardware integration possible without making hardware part of the current
+demonstration:
 
 ```text
-PX4/fake state ─► common NED frame ─► TelemetryFrame v2 ─► LoRa radio
+simulated state ─► companion process ─► TelemetryFrame v2 ─► virtual LoRa hub
                                                               │
                                                               ▼
                                                 parser/link-quality table
@@ -39,14 +40,14 @@ comes from a recorded seed.
 `campaign.py` repeats complete scenarios across seeds and summarizes distributions
 rather than presenting one favorable run.
 
-`companion.py` is the hardware-independent onboard service. `companion_io.py`
-connects it to PX4 `GLOBAL_POSITION_INT`, local-NED velocity setpoints, serial
-LoRa modems, UDP bench networks, and systemd. All drones must share one surveyed
-geodetic origin and synchronized system time. Monotonic time is used locally for
-scheduling and expiry so wall-clock adjustments cannot stall the service.
-Packet timestamps come from a synchronized shared epoch: UTC midnight for
-single-day tests, or the explicitly configured `mission_epoch_unix_s` for longer
-campaigns. The protocol can represent about 49.7 days after that epoch.
+`companion.py` is the hardware-independent node service. In the primary demo,
+each node runs that service in its own operating-system process. The parent
+process owns the deterministic virtual LoRa hub and exchanges frames and
+snapshots with the node processes over local pipes. This separates node state and
+failure boundaries while keeping the radio simulation repeatable.
+
+`companion_io.py` contains optional PX4, serial-radio, UDP, and systemd adapters
+retained for future work. They are not required by the software demonstration.
 
 `network_awareness.py` predicts link margin and time-to-loss from shared motion,
 builds present and future connectivity graphs, and selects deterministic paths.
@@ -54,16 +55,16 @@ builds present and future connectivity graphs, and selects deterministic paths.
 uses a conservative future graph plus periodic discovery floods, so a relay path
 can be active before the old direct edge disappears.
 
-`mesh_demo.py` runs four to eight real companion-service cores over a simulated
-LoRa hub. `mesh_visualization.py` provides both a localhost live dashboard and a
-self-contained replay. This is the primary network demonstration; it never
-enables flight control.
+`mesh_demo.py` runs four to sixteen companion-service nodes over the simulated
+LoRa hub. Six nodes are the validated acceptance configuration. The CLI defaults
+to one process per node; an inline backend remains available for fast regression
+runs. `mesh_visualization.py` provides both a localhost live dashboard and a
+self-contained replay. The demo never arms an aircraft or enables flight
+control.
 
-The companion computer does not arm the aircraft or change flight mode. PX4
-remains the authority for stabilization, estimation, geofencing, and failsafes.
-When PX4 telemetry is stale, its GPS health bit is false, or its reported fix is
-below `minimum_gps_fix_type`, the companion stops sending commands and relies on
-the configured PX4 offboard-loss action.
+The software-only acceptance path sends no flight-control commands. Optional PX4
+integration tests exercise a simulated vehicle and keep PX4 as the authority for
+stabilization, estimation, geofencing, and failsafes.
 
 When event logging is enabled, `simulation.py` records position, velocity,
 controller state, and separation over time. The main output is the plain-text

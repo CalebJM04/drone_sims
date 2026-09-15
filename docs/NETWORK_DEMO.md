@@ -1,12 +1,13 @@
-# 4+ node network demonstration
+# Multi-node software demonstration
 
 ## Purpose
 
 This is the project's primary demonstration. It validates a drone awareness
-network without requiring propellers or a flyable aircraft. Every simulated node
-runs the production `CompanionService`, uses the frozen telemetry protocol, and
-communicates through the same LoRa airtime, range, half-duplex, loss, corruption,
-and channel-access model used by the campaign suite.
+network without requiring radio hardware, propellers, or a flyable aircraft.
+Every simulated node runs the production `CompanionService` in an independent
+operating-system process, uses the frozen telemetry protocol, and communicates
+through the same LoRa airtime, range, half-duplex, loss, corruption, and
+channel-access model used by the campaign suite.
 
 The default scene contains six moving nodes:
 
@@ -24,7 +25,7 @@ make mesh-acceptance
 ```
 
 Pass/fail limits are frozen in
-`requirements/network_demo_acceptance.json`. The default requires:
+`requirements/network_demo_acceptance.json`. The six-node configuration requires:
 
 - at least four nodes;
 - at least 90% unique source-to-node delivery;
@@ -51,8 +52,21 @@ blue line is the route selected using the four-second look-ahead topology.
 For a quick non-real-time run or a different scale:
 
 ```bash
-.venv/bin/drone-sims mesh-demo --nodes 8 --duration 20
+.venv/bin/drone-sims mesh-demo --nodes 8 --duration 20 --backend process
 ```
+
+The supported range is 4 to 16 nodes. Six is the validated presentation size;
+larger values are stress experiments and may require a longer telemetry interval:
+
+```bash
+.venv/bin/drone-sims mesh-demo --nodes 16 --duration 20 \
+  --telemetry-interval 2
+```
+
+At the default modem settings, source telemetry alone consumes about 23% of the
+modeled channel at six nodes and about 62% at sixteen nodes. Relays, discovery,
+and retries add more traffic, so a 64-node configuration would not be credible
+on one channel at 1 Hz. It is intentionally not offered by the CLI.
 
 ## Routing behavior
 
@@ -74,43 +88,19 @@ Every companion snapshot includes:
 - collision distance, predicted closest approach, time to closest approach, and
   uncertainty margin.
 
-## Moving from simulation to four RF nodes
+## Process model
 
-Each RF node needs one host running the companion service and one reflashed
-Heltec bridge. A host can be a Raspberry Pi, laptop, or another Linux computer;
-a physical drone is not required. Use `tools/fake_pixhawk.py` or PX4 SITL as the
-position source. Props-off drone frames may carry the nodes for presentation.
+The parent process advances a virtual clock and applies the deterministic radio
+model. Each node process owns its flight-state source, routing table, neighbor
+table, collision tracker, and `CompanionService`. On every simulation step, a
+node receives frames delivered by the hub and returns any new transmission plus
+its current snapshot. The dashboard reports the backend, number of node
+processes, process IDs, and modeled source-channel load.
 
-The metadata-aware bridge uses:
+Use `--backend inline` for a faster reference run in automated campaigns. It uses
+the same node and radio logic in one process, but the process backend is the main
+presentation and acceptance mode.
 
-- a 40-byte host-to-bridge record containing bridge marker/version, immediate
-  transmitter ID, and the frozen 36-byte telemetry frame;
-- a 38-byte over-air record containing immediate transmitter ID and telemetry;
-  and
-- a 44-byte bridge-to-host record adding signed RSSI/SNR values in tenths.
-
-Re-run the two-radio bench acceptance after reflashing, then add two radios and
-run a four-node stationary topology. Do not treat simulated range or RSSI as
-calibration evidence. Physical range, obstruction, antenna, interference, and
-coexistence tests remain required.
-
-For each of four nodes, run `tools/soak_bench_node.py` with that node's config,
-fake-Pixhawk endpoint, and the four-node acceptance switches:
-
-```bash
-.venv/bin/python tools/soak_bench_node.py \
-  --config config/node-N.toml --fake-pixhawk tools/fake_pixhawk.py \
-  --target 127.0.0.1:1455N --node-id N --north POSITION \
-  --duration 900 --expected-peers 3 --minimum-neighbors 3 \
-  --require-link-metadata --output results/bench/mesh-node-N.json
-```
-
-Replace `N`, `POSITION`, and the MAVLink port with the values for each host.
-Every report checks observation-only operation and now preserves the link-quality
-table for later comparison with distance.
-
-After all four records are collected, combine them into one acceptance decision:
-
-```bash
-.venv/bin/python tools/evaluate_rf_mesh.py results/bench/mesh-node-*.json
-```
+The old Raspberry Pi, PX4, and Heltec instructions remain in the repository as
+optional future integration notes. They are outside the current project claim
+and are not needed for acceptance.

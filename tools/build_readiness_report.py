@@ -22,7 +22,7 @@ def load(path: Path) -> dict[str, Any]:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Evaluate frozen pre-hardware acceptance gates")
+    parser = argparse.ArgumentParser(description="Evaluate frozen software acceptance gates")
     parser.add_argument("--results", type=Path, default=Path("results/full"))
     parser.add_argument("--requirements", type=Path, default=Path("requirements/pre_hardware_acceptance.json"))
     args = parser.parse_args()
@@ -85,7 +85,7 @@ def main() -> int:
         "metadata": verification.get("metadata"),
         "evidence_source_sha256": current_source_digest,
         "campaign_safety": {name: campaign[name]["safety_distance_success_rate"] for name in SAFE_SCENARIOS},
-        "remaining_hardware_only": [
+        "outside_software_scope": [
             "RF range, interference, antenna placement and regional duty-cycle compliance",
             "GNSS multipath/jamming behavior with the selected receiver and airframe",
             "Raspberry Pi power, thermal, storage and process-watchdog validation",

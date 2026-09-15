@@ -7,7 +7,7 @@ from pathlib import Path
 from .campaign import run_campaign
 from .companion_runtime import run_service
 from .integrations import readiness
-from .mesh_demo import load_requirements, run_mesh_demo
+from .mesh_demo import MAX_DEMO_NODES, load_requirements, run_mesh_demo
 from .mesh_visualization import LiveMeshDashboard, build_mesh_dashboard
 from .network_matrix import run_network_matrix
 from .scenarios import CAMPAIGN_SCENARIOS, SCENARIOS, build
@@ -51,11 +51,13 @@ def parser() -> argparse.ArgumentParser:
     visualize.add_argument("--scenarios", nargs="+", choices=SCENARIOS, default=list(DEFAULT_TRACE_SCENARIOS))
     visualize.add_argument("--seed", type=int, default=7)
     mesh = commands.add_parser(
-        "mesh-demo", help="run 4-8 real companion services over a simulated LoRa mesh"
+        "mesh-demo", help="run 4-16 companion nodes over a simulated LoRa mesh"
     )
-    mesh.add_argument("--nodes", type=int, choices=range(4, 9), default=6)
+    mesh.add_argument("--nodes", type=int, choices=range(4, MAX_DEMO_NODES + 1), default=6)
     mesh.add_argument("--duration", type=float, default=15.0)
     mesh.add_argument("--seed", type=int, default=31)
+    mesh.add_argument("--backend", choices=("process", "inline"), default="process")
+    mesh.add_argument("--telemetry-interval", type=float, default=1.0)
     mesh.add_argument("--realtime", action="store_true", help="pace virtual time to wall time")
     mesh.add_argument("--serve", type=int, metavar="PORT", help="serve a live dashboard on localhost")
     mesh.add_argument("--output", type=Path, default=Path("results/mesh/demo.json"))
@@ -136,6 +138,8 @@ def main(argv: list[str] | None = None) -> int:
                 duration_s=args.duration,
                 seed=args.seed,
                 realtime=args.realtime,
+                backend=args.backend,
+                telemetry_interval_s=args.telemetry_interval,
                 requirements=load_requirements(),
                 update=update,
             )

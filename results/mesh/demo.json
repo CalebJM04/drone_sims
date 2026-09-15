@@ -2012,15 +2012,17 @@
   },
   "metadata": {
     "command": "drone-sims mesh-demo",
-    "generated_at_utc": "2026-09-15T17:45:09.404905+00:00",
+    "generated_at_utc": "2026-09-15T18:14:14.840965+00:00",
     "git": {
       "dirty": true,
-      "revision": "b87f5da25d392fdfd2bac0c431c8e26e241f4bc3"
+      "revision": "777625ebfe3ae24b69031278e683f41f3731ea3d"
     },
     "parameters": {
+      "backend": "process",
       "duration_s": 15.0,
       "nodes": 6,
-      "realtime": false
+      "realtime": false,
+      "telemetry_interval_s": 1.0
     },
     "px4_image": null,
     "runtime": {
@@ -2032,7 +2034,7 @@
     "seeds": [
       31
     ],
-    "source_sha256": "17b9240c83ae2ba7149b092c190ea27d6afc8ac4cef00b3024c8fc4ac64583e6"
+    "source_sha256": "e5439b30fdeefc5b94da486596430441dbc17fa7332c9cb9a3ba65056d6caa4a"
   },
   "requirements": {
     "maximum_control_commands": 0,
@@ -2046,6 +2048,7 @@
   "snapshots": [
     {
       "alerts": [],
+      "backend": "process",
       "delivery_ratio": 0.0,
       "links": [
         {
@@ -2312,6 +2315,7 @@
           }
         }
       },
+      "node_processes": 6,
       "nodes": [
         {
           "id": 1,
@@ -2396,10 +2400,12 @@
         1,
         2
       ],
+      "source_channel_load": 0.23116799999999998,
       "time_s": 0.0
     },
     {
       "alerts": [],
+      "backend": "process",
       "delivery_ratio": 0.9666666666666667,
       "links": [
         {
@@ -2969,6 +2975,7 @@
           }
         }
       },
+      "node_processes": 6,
       "nodes": [
         {
           "id": 1,
@@ -3053,10 +3060,12 @@
         1,
         2
       ],
+      "source_channel_load": 0.23116799999999998,
       "time_s": 0.5
     },
     {
       "alerts": [],
+      "backend": "process",
       "delivery_ratio": 0.5,
       "links": [
         {
@@ -3637,6 +3646,7 @@
           }
         }
       },
+      "node_processes": 6,
       "nodes": [
         {
           "id": 1,
@@ -3722,10 +3732,12 @@
         3,
         2
       ],
+      "source_channel_load": 0.23116799999999998,
       "time_s": 1.0
     },
     {
       "alerts": [],
+      "backend": "process",
       "delivery_ratio": 0.9,
       "links": [
         {
@@ -4306,6 +4318,7 @@
           }
         }
       },
+      "node_processes": 6,
       "nodes": [
         {
           "id": 1,
@@ -4391,10 +4404,12 @@
         3,
         2
       ],
+      "source_channel_load": 0.23116799999999998,
       "time_s": 1.5
     },
     {
       "alerts": [],
+      "backend": "process",
       "delivery_ratio": 0.6111111111111112,
       "links": [
         {
@@ -4975,6 +4990,7 @@
           }
         }
       },
+      "node_processes": 6,
       "nodes": [
         {
           "id": 1,
@@ -5060,6 +5076,7 @@
         3,
         2
       ],
+      "source_channel_load": 0.23116799999999998,
       "time_s": 2.0
     },
     {
@@ -5131,6 +5148,7 @@
           "uncertainty_margin_m": 3.2797569364969714
         }
       ],
+      "backend": "process",
       "delivery_ratio": 0.9444444444444444,
       "links": [
         {
@@ -5711,6 +5729,7 @@
           }
         }
       },
+      "node_processes": 6,
       "nodes": [
         {
           "id": 1,
@@ -5796,6 +5815,7 @@
         3,
         2
       ],
+      "source_channel_load": 0.23116799999999998,
       "time_s": 2.5
     },
     {
@@ -5867,6 +5887,7 @@
           "uncertainty_margin_m": 3.164094351074253
         }
       ],
+      "backend": "process",
       "delivery_ratio": 0.7083333333333334,
       "links": [
         {
@@ -6447,6 +6468,7 @@
           }
         }
       },
+      "node_processes": 6,
       "nodes": [
         {
           "id": 1,
@@ -6532,6 +6554,7 @@
         3,
         2
       ],
+      "source_channel_load": 0.23116799999999998,
       "time_s": 3.0
     },
     {
@@ -6570,6 +6593,7 @@
           "uncertainty_margin_m": 2.892637745207651
         }
       ],
+      "backend": "process",
       "delivery_ratio": 0.925,
       "links": [
         {
@@ -7150,6 +7174,7 @@
           }
         }
       },
+      "node_processes": 6,
       "nodes": [
         {
           "id": 1,
@@ -7235,6 +7260,7 @@
         3,
         2
       ],
+      "source_channel_load": 0.23116799999999998,
       "time_s": 3.5
     },
     {
@@ -7273,6 +7299,7 @@
           "uncertainty_margin_m": 2.78615606615997
         }
       ],
+      "backend": "process",
       "delivery_ratio": 0.7533333333333333,
       "links": [
         {
@@ -7853,6 +7880,7 @@
           }
         }
       },
+      "node_processes": 6,
       "nodes": [
         {
           "id": 1,
@@ -7938,6 +7966,7 @@
         3,
         2
       ],
+      "source_channel_load": 0.23116799999999998,
       "time_s": 4.0
     },
     {
@@ -7976,6 +8005,7 @@
           "uncertainty_margin_m": 2.6014617285287898
         }
       ],
+      "backend": "process",
       "delivery_ratio": 0.9266666666666666,
       "links": [
         {
@@ -8556,6 +8586,7 @@
           }
         }
       },
+      "node_processes": 6,
       "nodes": [
         {
           "id": 1,
@@ -8641,6 +8672,7 @@
         3,
         2
       ],
+      "source_channel_load": 0.23116799999999998,
       "time_s": 4.5
     },
     {
@@ -8668,6 +8700,7 @@
           "uncertainty_margin_m": 2.510685289915883
         }
       ],
+      "backend": "process",
       "delivery_ratio": 0.7944444444444444,
       "links": [
         {
@@ -9248,6 +9281,7 @@
           }
         }
       },
+      "node_processes": 6,
       "nodes": [
         {
           "id": 1,
@@ -9333,6 +9367,7 @@
         3,
         2
       ],
+      "source_channel_load": 0.23116799999999998,
       "time_s": 5.0
     },
     {
@@ -9360,6 +9395,7 @@
           "uncertainty_margin_m": 2.355918743293155
         }
       ],
+      "backend": "process",
       "delivery_ratio": 0.9555555555555556,
       "links": [
         {
@@ -9940,6 +9976,7 @@
           }
         }
       },
+      "node_processes": 6,
       "nodes": [
         {
           "id": 1,
@@ -10025,6 +10062,7 @@
         3,
         2
       ],
+      "source_channel_load": 0.23116799999999998,
       "time_s": 5.5
     },
     {
@@ -10052,6 +10090,7 @@
           "uncertainty_margin_m": 2.2862448742424766
         }
       ],
+      "backend": "process",
       "delivery_ratio": 0.819047619047619,
       "links": [
         {
@@ -10632,6 +10671,7 @@
           }
         }
       },
+      "node_processes": 6,
       "nodes": [
         {
           "id": 1,
@@ -10717,6 +10757,7 @@
         3,
         2
       ],
+      "source_channel_load": 0.23116799999999998,
       "time_s": 6.0
     },
     {
@@ -10744,6 +10785,7 @@
           "uncertainty_margin_m": 2.1715439495897844
         }
       ],
+      "backend": "process",
       "delivery_ratio": 0.9619047619047619,
       "links": [
         {
@@ -11324,6 +11366,7 @@
           }
         }
       },
+      "node_processes": 6,
       "nodes": [
         {
           "id": 1,
@@ -11410,6 +11453,7 @@
         4,
         2
       ],
+      "source_channel_load": 0.23116799999999998,
       "time_s": 6.5
     },
     {
@@ -11437,6 +11481,7 @@
           "uncertainty_margin_m": 2.129035139446975
         }
       ],
+      "backend": "process",
       "delivery_ratio": 0.8416666666666667,
       "links": [
         {
@@ -12017,6 +12062,7 @@
           }
         }
       },
+      "node_processes": 6,
       "nodes": [
         {
           "id": 1,
@@ -12103,6 +12149,7 @@
         4,
         2
       ],
+      "source_channel_load": 0.23116799999999998,
       "time_s": 7.0
     },
     {
@@ -12130,6 +12177,7 @@
           "uncertainty_margin_m": 2.0647888814597968
         }
       ],
+      "backend": "process",
       "delivery_ratio": 0.9666666666666667,
       "links": [
         {
@@ -12710,6 +12758,7 @@
           }
         }
       },
+      "node_processes": 6,
       "nodes": [
         {
           "id": 1,
@@ -12796,6 +12845,7 @@
         4,
         2
       ],
+      "source_channel_load": 0.23116799999999998,
       "time_s": 7.5
     },
     {
@@ -12823,6 +12873,7 @@
           "uncertainty_margin_m": 2.054547547515024
         }
       ],
+      "backend": "process",
       "delivery_ratio": 0.8592592592592593,
       "links": [
         {
@@ -13403,6 +13454,7 @@
           }
         }
       },
+      "node_processes": 6,
       "nodes": [
         {
           "id": 1,
@@ -13489,10 +13541,12 @@
         4,
         2
       ],
+      "source_channel_load": 0.23116799999999998,
       "time_s": 8.0
     },
     {
       "alerts": [],
+      "backend": "process",
       "delivery_ratio": 0.9592592592592593,
       "links": [
         {
@@ -14073,6 +14127,7 @@
           }
         }
       },
+      "node_processes": 6,
       "nodes": [
         {
           "id": 1,
@@ -14159,10 +14214,12 @@
         4,
         2
       ],
+      "source_channel_load": 0.23116799999999998,
       "time_s": 8.5
     },
     {
       "alerts": [],
+      "backend": "process",
       "delivery_ratio": 0.8733333333333333,
       "links": [
         {
@@ -14743,6 +14800,7 @@
           }
         }
       },
+      "node_processes": 6,
       "nodes": [
         {
           "id": 1,
@@ -14829,10 +14887,12 @@
         4,
         2
       ],
+      "source_channel_load": 0.23116799999999998,
       "time_s": 9.0
     },
     {
       "alerts": [],
+      "backend": "process",
       "delivery_ratio": 0.9633333333333334,
       "links": [
         {
@@ -15413,6 +15473,7 @@
           }
         }
       },
+      "node_processes": 6,
       "nodes": [
         {
           "id": 1,
@@ -15499,10 +15560,12 @@
         4,
         2
       ],
+      "source_channel_load": 0.23116799999999998,
       "time_s": 9.5
     },
     {
       "alerts": [],
+      "backend": "process",
       "delivery_ratio": 0.8818181818181818,
       "links": [
         {
@@ -16083,6 +16146,7 @@
           }
         }
       },
+      "node_processes": 6,
       "nodes": [
         {
           "id": 1,
@@ -16169,10 +16233,12 @@
         4,
         2
       ],
+      "source_channel_load": 0.23116799999999998,
       "time_s": 10.0
     },
     {
       "alerts": [],
+      "backend": "process",
       "delivery_ratio": 0.9666666666666667,
       "links": [
         {
@@ -16753,6 +16819,7 @@
           }
         }
       },
+      "node_processes": 6,
       "nodes": [
         {
           "id": 1,
@@ -16839,10 +16906,12 @@
         4,
         2
       ],
+      "source_channel_load": 0.23116799999999998,
       "time_s": 10.5
     },
     {
       "alerts": [],
+      "backend": "process",
       "delivery_ratio": 0.8916666666666667,
       "links": [
         {
@@ -17423,6 +17492,7 @@
           }
         }
       },
+      "node_processes": 6,
       "nodes": [
         {
           "id": 1,
@@ -17509,10 +17579,12 @@
         4,
         2
       ],
+      "source_channel_load": 0.23116799999999998,
       "time_s": 11.0
     },
     {
       "alerts": [],
+      "backend": "process",
       "delivery_ratio": 0.9638888888888889,
       "links": [
         {
@@ -18093,6 +18165,7 @@
           }
         }
       },
+      "node_processes": 6,
       "nodes": [
         {
           "id": 1,
@@ -18179,10 +18252,12 @@
         4,
         2
       ],
+      "source_channel_load": 0.23116799999999998,
       "time_s": 11.5
     },
     {
       "alerts": [],
+      "backend": "process",
       "delivery_ratio": 0.8923076923076924,
       "links": [
         {
@@ -18763,6 +18838,7 @@
           }
         }
       },
+      "node_processes": 6,
       "nodes": [
         {
           "id": 1,
@@ -18849,10 +18925,12 @@
         4,
         2
       ],
+      "source_channel_load": 0.23116799999999998,
       "time_s": 12.0
     },
     {
       "alerts": [],
+      "backend": "process",
       "delivery_ratio": 0.9564102564102565,
       "links": [
         {
@@ -19433,6 +19511,7 @@
           }
         }
       },
+      "node_processes": 6,
       "nodes": [
         {
           "id": 1,
@@ -19519,10 +19598,12 @@
         4,
         2
       ],
+      "source_channel_load": 0.23116799999999998,
       "time_s": 12.5
     },
     {
       "alerts": [],
+      "backend": "process",
       "delivery_ratio": 0.9,
       "links": [
         {
@@ -20092,6 +20173,7 @@
           }
         }
       },
+      "node_processes": 6,
       "nodes": [
         {
           "id": 1,
@@ -20178,10 +20260,12 @@
         4,
         2
       ],
+      "source_channel_load": 0.23116799999999998,
       "time_s": 13.0
     },
     {
       "alerts": [],
+      "backend": "process",
       "delivery_ratio": 0.9619047619047619,
       "links": [
         {
@@ -20740,6 +20824,7 @@
           }
         }
       },
+      "node_processes": 6,
       "nodes": [
         {
           "id": 1,
@@ -20826,10 +20911,12 @@
         4,
         2
       ],
+      "source_channel_load": 0.23116799999999998,
       "time_s": 13.5
     },
     {
       "alerts": [],
+      "backend": "process",
       "delivery_ratio": 0.9,
       "links": [
         {
@@ -21388,6 +21475,7 @@
           }
         }
       },
+      "node_processes": 6,
       "nodes": [
         {
           "id": 1,
@@ -21474,6 +21562,7 @@
         4,
         2
       ],
+      "source_channel_load": 0.23116799999999998,
       "time_s": 14.0
     },
     {
@@ -21501,6 +21590,7 @@
           "uncertainty_margin_m": 3.2170799065301443
         }
       ],
+      "backend": "process",
       "delivery_ratio": 0.9577777777777777,
       "links": [
         {
@@ -22059,6 +22149,7 @@
           }
         }
       },
+      "node_processes": 6,
       "nodes": [
         {
           "id": 1,
@@ -22145,11 +22236,13 @@
         4,
         2
       ],
+      "source_channel_load": 0.23116799999999998,
       "time_s": 14.5
     }
   ],
   "status": "PASS",
   "summary": {
+    "backend": "process",
     "collision_awareness_alerts": 1,
     "control_commands": 0,
     "corrupt_frames_rejected": 0,
@@ -22158,10 +22251,23 @@
     "half_duplex_losses": 253,
     "maximum_hops": 3,
     "maximum_state_age_s": 2.182358316655346,
+    "node_processes": 6,
     "nodes": 6,
+    "offered_load_pps": 6.0,
     "originated_packets": 90,
     "p95_latency_ms": 520.4093224915578,
     "preemptive_route_handoffs": 1,
+    "process_ids": [
+      2113426,
+      2113427,
+      2113428,
+      2113429,
+      2113430,
+      2113431
+    ],
+    "single_channel_capacity_pps": 25.95514950166113,
+    "source_channel_load": 0.231168,
+    "telemetry_interval_s": 1.0,
     "transmission_attempts": 1596,
     "undetected_corruptions": 0,
     "unique_node_deliveries": 434

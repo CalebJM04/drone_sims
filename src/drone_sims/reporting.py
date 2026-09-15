@@ -106,7 +106,7 @@ def final_results_text(
         "",
         *(
             [
-                "Primary 4+ node mesh demo",
+                "Primary six-node software mesh demo",
                 (
                     f"{mesh['summary']['nodes']} nodes, "
                     f"{mesh['summary']['delivery_ratio'] * 100:.1f}% delivery, "
@@ -126,9 +126,8 @@ def final_results_text(
         f"PX4 collision test: {closed_loop['passed']}/{closed_loop['total']} passed",
         f"PX4 minimum separation: {closed_loop['actual_minimum_separation_m']:.2f} m",
         "",
-        "The software and simulation checks passed. This does not mean the system is ready",
-        "for real flights. Radio range, GNSS, Raspberry Pi power, Pixhawk wiring, and the",
-        "actual aircraft still need to be tested.",
+        "The software-only project checks passed. Physical RF behavior, aircraft hardware,",
+        "and real-flight safety are outside the demonstrated scope.",
         "",
     ]
     return "\n".join(lines)

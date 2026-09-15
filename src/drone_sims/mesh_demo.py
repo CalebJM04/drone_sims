@@ -3,6 +3,9 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 import json
 import math
+import multiprocessing
+from multiprocessing.connection import Connection
+import os
 from pathlib import Path
 import random
 import time
@@ -16,6 +19,9 @@ from .protocol import ProtocolError, decode
 from .provenance import collect_metadata
 from .radio import RadioConfig, RadioMedium
 from .radio_types import RadioReception
+
+
+MAX_DEMO_NODES = 16
 
 
 @dataclass(frozen=True, slots=True)
@@ -144,9 +150,203 @@ class HubRadio:
         pass
 
 
+class BufferedRadio:
+    def __init__(self) -> None:
+        self.inbox: list[RadioReception] = []
+        self.outbox: list[bytes] = []
+
+    def receive(self) -> list[RadioReception]:
+        packets, self.inbox = self.inbox, []
+        return packets
+
+    def send(self, payload: bytes) -> None:
+        self.outbox.append(payload)
+
+    def close(self) -> None:
+        pass
+
+
+def _node_process(
+    connection: Connection,
+    initial: KinematicState,
+    config: CompanionConfig,
+) -> None:
+    controller = TrajectoryFlightController(initial)
+    radio = BufferedRadio()
+    service = CompanionService(config, controller, radio)
+    try:
+        connection.send(("ready", os.getpid()))
+        while True:
+            message = connection.recv()
+            operation = message[0]
+            if operation == "step":
+                _, now, packets, capture = message
+                radio.inbox.extend(packets)
+                service.step(now, now)
+                outgoing, radio.outbox = radio.outbox, []
+                snapshot = service.snapshot() if capture else None
+                connection.send(("step", outgoing, snapshot, len(controller.commands)))
+            elif operation == "suspend":
+                service._next_telemetry = math.inf
+                connection.send(("suspended",))
+            elif operation == "stop":
+                connection.send(("stopped", service.snapshot(), len(controller.commands)))
+                break
+            else:
+                raise ValueError(f"unknown node operation: {operation}")
+    except (EOFError, BrokenPipeError):
+        pass
+    finally:
+        service.close()
+        connection.close()
+
+
+class InlineNodeRuntime:
+    def __init__(
+        self,
+        trajectories: dict[int, KinematicState],
+        configs: dict[int, CompanionConfig],
+        hub: MeshRadioHub,
+    ) -> None:
+        self.controllers = {
+            node: TrajectoryFlightController(state) for node, state in trajectories.items()
+        }
+        self.services = {
+            node: CompanionService(configs[node], self.controllers[node], hub.radio(node))
+            for node in trajectories
+        }
+
+    @property
+    def process_ids(self) -> list[int]:
+        return [os.getpid()]
+
+    def step(
+        self,
+        hub: MeshRadioHub,
+        now: float,
+        *,
+        capture: bool,
+    ) -> dict[str, dict[str, object]] | None:
+        for service in self.services.values():
+            service.step(now, now)
+        if not capture:
+            return None
+        return {str(node): service.snapshot() for node, service in self.services.items()}
+
+    def suspend_telemetry(self) -> None:
+        for service in self.services.values():
+            service._next_telemetry = math.inf
+
+    def close(self) -> tuple[dict[str, dict[str, object]], int]:
+        snapshots = {str(node): service.snapshot() for node, service in self.services.items()}
+        commands = sum(len(controller.commands) for controller in self.controllers.values())
+        for service in self.services.values():
+            service.close()
+        return snapshots, commands
+
+
+class ProcessNodeRuntime:
+    def __init__(
+        self,
+        trajectories: dict[int, KinematicState],
+        configs: dict[int, CompanionConfig],
+    ) -> None:
+        context = multiprocessing.get_context("spawn")
+        self.connections: dict[int, Connection] = {}
+        self.processes: dict[int, multiprocessing.Process] = {}
+        self.command_counts: dict[int, int] = {}
+        self._process_ids: list[int] = []
+        for node, initial in trajectories.items():
+            parent, child = context.Pipe()
+            process = context.Process(
+                target=_node_process,
+                args=(child, initial, configs[node]),
+                name=f"drone-node-{node}",
+            )
+            process.daemon = True
+            process.start()
+            child.close()
+            self.connections[node] = parent
+            self.processes[node] = process
+        for node in trajectories:
+            message = self._receive(node)
+            if message[0] != "ready":
+                raise RuntimeError(f"node {node} did not start correctly")
+            self._process_ids.append(int(message[1]))
+
+    @property
+    def process_ids(self) -> list[int]:
+        return self._process_ids
+
+    def _receive(self, node: int) -> tuple[object, ...]:
+        connection = self.connections[node]
+        if not connection.poll(30.0):
+            process = self.processes[node]
+            raise TimeoutError(
+                f"node {node} did not respond; exit code is {process.exitcode}"
+            )
+        try:
+            return connection.recv()
+        except EOFError as error:
+            raise RuntimeError(f"node {node} exited unexpectedly") from error
+
+    def step(
+        self,
+        hub: MeshRadioHub,
+        now: float,
+        *,
+        capture: bool,
+    ) -> dict[str, dict[str, object]] | None:
+        for node, connection in self.connections.items():
+            packets, hub.inboxes[node] = hub.inboxes[node], []
+            connection.send(("step", now, packets, capture))
+        snapshots: dict[str, dict[str, object]] = {}
+        outgoing: list[tuple[int, bytes]] = []
+        for node in self.connections:
+            message = self._receive(node)
+            if message[0] != "step":
+                raise RuntimeError(f"unexpected response from node {node}: {message[0]}")
+            outgoing.extend((node, payload) for payload in message[1])
+            if message[2] is not None:
+                snapshots[str(node)] = message[2]
+            self.command_counts[node] = int(message[3])
+        for node, payload in outgoing:
+            hub.transmit(node, payload)
+        return snapshots if capture else None
+
+    def suspend_telemetry(self) -> None:
+        for connection in self.connections.values():
+            connection.send(("suspend",))
+        for node in self.connections:
+            if self._receive(node)[0] != "suspended":
+                raise RuntimeError(f"node {node} did not suspend telemetry")
+
+    def close(self) -> tuple[dict[str, dict[str, object]], int]:
+        for node, connection in self.connections.items():
+            if self.processes[node].is_alive():
+                connection.send(("stop",))
+        snapshots: dict[str, dict[str, object]] = {}
+        for node in self.connections:
+            if self.processes[node].is_alive():
+                message = self._receive(node)
+                if message[0] == "stopped":
+                    snapshots[str(node)] = message[1]
+                    self.command_counts[node] = int(message[2])
+        deadline = time.monotonic() + 5.0
+        for process in self.processes.values():
+            process.join(timeout=max(0.0, deadline - time.monotonic()))
+        for process in self.processes.values():
+            if process.is_alive():
+                process.terminate()
+                process.join(timeout=1.0)
+        for connection in self.connections.values():
+            connection.close()
+        return snapshots, sum(self.command_counts.values())
+
+
 def demo_trajectories(nodes: int) -> dict[int, KinematicState]:
-    if nodes < 4:
-        raise ValueError("mesh demo requires at least four nodes")
+    if not 4 <= nodes <= MAX_DEMO_NODES:
+        raise ValueError(f"mesh demo requires 4 to {MAX_DEMO_NODES} nodes")
     base = {
         1: KinematicState(1, Vec3(0.0, 0.0), Vec3(0.0, 0.0), 0.0),
         2: KinematicState(2, Vec3(20.0, 0.0), Vec3(1.5, 0.0), 0.0),
@@ -157,6 +357,15 @@ def demo_trajectories(nodes: int) -> dict[int, KinematicState]:
         7: KinematicState(7, Vec3(18.0, 18.0), Vec3(0.0, -0.2), 0.0),
         8: KinematicState(8, Vec3(35.0, 5.0), Vec3(0.2, 0.1), 0.0),
     }
+    for node in range(9, nodes + 1):
+        index = node - 9
+        row, column = divmod(index, 8)
+        base[node] = KinematicState(
+            node,
+            Vec3(float(column * 8), float(24 + row * 8)),
+            Vec3(0.0, 0.0),
+            0.0,
+        )
     return {node: base[node] for node in range(1, nodes + 1)}
 
 
@@ -183,18 +392,21 @@ def run_mesh_demo(
     duration_s: float = 15.0,
     seed: int = 31,
     realtime: bool = False,
+    backend: str = "inline",
+    telemetry_interval_s: float = 1.0,
     requirements: DemoRequirements | None = None,
     update: Callable[[dict[str, object]], None] | None = None,
 ) -> dict[str, object]:
-    if not 4 <= nodes <= 8:
-        raise ValueError("nodes must be between 4 and 8")
+    if not 4 <= nodes <= MAX_DEMO_NODES:
+        raise ValueError(f"nodes must be between 4 and {MAX_DEMO_NODES}")
     if duration_s <= 0:
         raise ValueError("duration_s must be positive")
+    if telemetry_interval_s <= 0:
+        raise ValueError("telemetry_interval_s must be positive")
+    if backend not in {"inline", "process"}:
+        raise ValueError("backend must be inline or process")
     requirements = requirements or load_requirements()
     trajectories = demo_trajectories(nodes)
-    controllers = {
-        node: TrajectoryFlightController(state) for node, state in trajectories.items()
-    }
     radio_config = RadioConfig(
         range_m=30.0,
         random_loss=0.002,
@@ -205,34 +417,36 @@ def run_mesh_demo(
     )
     hub = MeshRadioHub(
         list(trajectories),
-        lambda node: controllers[node].initial.at(hub.now).position,
+        lambda node: trajectories[node].at(hub.now).position,
         seed=seed,
         config=radio_config,
     )
-    services = {
-        node: CompanionService(
-            CompanionConfig(
-                node,
-                1000 + node,
-                telemetry_interval_s=1.0,
-                risk_interval_s=0.1,
-                safety_distance_m=3.0,
-                horizon_s=6.0,
-                packet_ttl=5,
-                control_enabled=False,
-                collision_awareness_enabled=True,
-                routing_mode="proactive",
-                nominal_radio_range_m=radio_config.range_m,
-                route_lookahead_s=4.0,
-                route_margin=0.90,
-                link_warning_margin_m=6.0,
-                routing_discovery_interval_packets=2,
-            ),
-            controllers[node],
-            hub.radio(node),
+    configs = {
+        node: CompanionConfig(
+            node,
+            1000 + node,
+            telemetry_interval_s=telemetry_interval_s,
+            risk_interval_s=0.1,
+            safety_distance_m=3.0,
+            horizon_s=6.0,
+            packet_ttl=max(5, math.ceil(math.sqrt(nodes))),
+            table_capacity=max(16, nodes),
+            control_enabled=False,
+            collision_awareness_enabled=True,
+            routing_mode="proactive",
+            nominal_radio_range_m=radio_config.range_m,
+            route_lookahead_s=4.0,
+            route_margin=0.90,
+            link_warning_margin_m=6.0,
+            routing_discovery_interval_packets=max(2, nodes // 8),
         )
         for node in trajectories
     }
+    runtime: InlineNodeRuntime | ProcessNodeRuntime
+    if backend == "process":
+        runtime = ProcessNodeRuntime(trajectories, configs)
+    else:
+        runtime = InlineNodeRuntime(trajectories, configs, hub)
     snapshots: list[dict[str, object]] = []
     events: list[dict[str, object]] = []
     preemptive_seen = False
@@ -249,9 +463,10 @@ def run_mesh_demo(
             if remaining > 0:
                 time.sleep(remaining)
         hub.deliver(now)
-        for service in services.values():
-            service.step(now, now)
-        if now + 1e-9 >= next_snapshot:
+        capture = now + 1e-9 >= next_snapshot
+        node_snapshots = runtime.step(hub, now, capture=capture)
+        if capture:
+            assert node_snapshots is not None
             states = {node: state.at(now) for node, state in trajectories.items()}
             links = topology_links(
                 states,
@@ -303,7 +518,6 @@ def run_mesh_demo(
                     "planned_path": future_to_two,
                     "observed_relay_transmitters": actual_relays,
                 })
-            node_snapshots = {str(node): service.snapshot() for node, service in services.items()}
             active_alerts = [
                 {"node_id": int(node), **alert}
                 for node, snapshot in node_snapshots.items()
@@ -327,6 +541,12 @@ def run_mesh_demo(
             possible_so_far = len(hub.originated) * (nodes - 1)
             state = {
                 "time_s": round(now, 3),
+                "backend": backend,
+                "node_processes": len(runtime.process_ids),
+                "source_channel_load": (
+                    nodes * radio_config.modem.airtime_seconds(36)
+                    / telemetry_interval_s
+                ),
                 "nodes": [
                     {
                         "id": node,
@@ -354,19 +574,19 @@ def run_mesh_demo(
             next_snapshot += 0.5
         now = round(now + step, 10)
 
-    for service in services.values():
-        service._next_telemetry = math.inf
+    runtime.suspend_telemetry()
     drain_until = duration_s + 2.0
     while now <= drain_until + 1e-9:
         hub.deliver(now)
-        for service in services.values():
-            service.step(now, now)
+        runtime.step(hub, now, capture=False)
         now = round(now + step, 10)
 
+    final_nodes, control_commands = runtime.close()
     possible = len(hub.originated) * (nodes - 1)
     delivery_ratio = len(hub.delivered) / possible if possible else 0.0
     p95_latency_ms = (_percentile(hub.latencies, 0.95) or 0.0) * 1000.0
-    control_commands = sum(len(controller.commands) for controller in controllers.values())
+    channel_capacity_pps = 1.0 / radio_config.modem.airtime_seconds(36)
+    offered_load_pps = nodes / telemetry_interval_s
     checks = {
         "minimum_nodes": nodes >= requirements.minimum_nodes,
         "delivery_ratio": delivery_ratio >= requirements.minimum_delivery_ratio,
@@ -381,14 +601,27 @@ def run_mesh_demo(
         "metadata": collect_metadata(
             "drone-sims mesh-demo",
             seeds=[seed],
-            parameters={"nodes": nodes, "duration_s": duration_s, "realtime": realtime},
+            parameters={
+                "nodes": nodes,
+                "duration_s": duration_s,
+                "realtime": realtime,
+                "backend": backend,
+                "telemetry_interval_s": telemetry_interval_s,
+            },
         ),
         "status": "PASS" if all(checks.values()) else "FAIL",
         "checks": checks,
         "requirements": asdict(requirements),
         "summary": {
             "nodes": nodes,
+            "backend": backend,
+            "node_processes": len(runtime.process_ids),
+            "process_ids": runtime.process_ids,
             "duration_s": duration_s,
+            "telemetry_interval_s": telemetry_interval_s,
+            "offered_load_pps": offered_load_pps,
+            "single_channel_capacity_pps": channel_capacity_pps,
+            "source_channel_load": offered_load_pps / channel_capacity_pps,
             "originated_packets": len(hub.originated),
             "unique_node_deliveries": len(hub.delivered),
             "delivery_ratio": delivery_ratio,
@@ -409,8 +642,6 @@ def run_mesh_demo(
         },
         "events": events,
         "snapshots": snapshots,
-        "final_nodes": {str(node): service.snapshot() for node, service in services.items()},
+        "final_nodes": final_nodes,
     }
-    for service in services.values():
-        service.close()
     return report

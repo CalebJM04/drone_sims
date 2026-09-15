@@ -1,5 +1,8 @@
 # Raspberry Pi companion deployment
 
+> Archived future-integration guide: Raspberry Pi deployment is not required by
+> the current software-only demonstration or acceptance criteria.
+
 This procedure is intentionally observation-first. Do not install props while
 bringing up power, serial links, or Offboard setpoints.
 

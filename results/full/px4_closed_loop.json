@@ -1,7 +1,7 @@
 {
-  "actual_lateral_response_m": 18.044754656622146,
-  "actual_minimum_separation_m": 7.898520101285004,
-  "alarm_time_s": 1.1150120398961008,
+  "actual_lateral_response_m": 17.742151082099916,
+  "actual_minimum_separation_m": 8.304819602130953,
+  "alarm_time_s": 1.114254133310169,
   "checks": {
     "actual_separation_at_least_4m": true,
     "arm_accepted": true,
@@ -16,30 +16,30 @@
     "takeoff_accepted": true,
     "uncertainty_aware_alarm": true
   },
-  "command_time_s": 1.1155650247819722,
+  "command_time_s": 1.114593564067036,
   "final_airborne_position": [
-    -9.600831031799316,
-    15.350911140441895,
-    -2.866912841796875,
-    -1.4876339435577393,
-    2.363168716430664,
-    0.037505853921175
+    -16.373811721801758,
+    6.527637004852295,
+    -3.325958251953125,
+    -2.558689832687378,
+    0.9591575860977173,
+    0.014495361596345901
   ],
   "image": "px4io/px4-sitl@sha256:01866d912ac22ca6119a996b830cf628a6d47dfb60fdccc41cd9f44b62935a44",
   "landed_position": [
-    -11.443851470947266,
-    17.919893264770508,
-    -0.099761962890625,
-    0.2085064947605133,
-    0.6696845889091492,
-    -0.07654724270105362
+    -19.553808212280273,
+    7.3679986000061035,
+    -0.003021240234375,
+    0.3251568675041199,
+    0.6979498267173767,
+    -0.08464352786540985
   ],
   "metadata": {
     "command": "tools/run_px4_closed_loop.py",
-    "generated_at_utc": "2026-09-15T17:46:41.468305+00:00",
+    "generated_at_utc": "2026-09-15T18:15:35.682130+00:00",
     "git": {
       "dirty": true,
-      "revision": "b87f5da25d392fdfd2bac0c431c8e26e241f4bc3"
+      "revision": "777625ebfe3ae24b69031278e683f41f3731ea3d"
     },
     "parameters": {
       "seed": 401
@@ -54,7 +54,7 @@
     "seeds": [
       401
     ],
-    "source_sha256": "17b9240c83ae2ba7149b092c190ea27d6afc8ac4cef00b3024c8fc4ac64583e6"
+    "source_sha256": "e5439b30fdeefc5b94da486596430441dbc17fa7332c9cb9a3ba65056d6caa4a"
   },
   "network": {
     "delivered": 9,
@@ -65,14 +65,14 @@
     "time_on_air_ms": 38.528
   },
   "passed": 12,
-  "planner_predicted_separation_m": 9.594565850919295,
+  "planner_predicted_separation_m": 9.660700292495514,
   "scenario_origin": [
-    0.10078975558280945,
-    0.13605903089046478,
-    -3.155731201171875,
-    -0.013647281564772129,
-    0.09238384664058685,
-    -0.028817178681492805
+    0.09364481270313263,
+    -0.07590752094984055,
+    -3.1375732421875,
+    -0.03826658055186272,
+    0.2305615097284317,
+    -0.031326647847890854
   ],
   "seed": 401,
   "selected_maneuver": "right",

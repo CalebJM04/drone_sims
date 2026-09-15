@@ -1,6 +1,6 @@
 # Test matrix and evidence boundary
 
-| Project responsibility | Executable verification | Remaining physical test |
+| Project responsibility | Executable verification | Outside current software claim |
 |---|---|---|
 | Collision math | Geometry tests, sampling oracle, 25k randomized comparisons | Logged GNSS versus independent truth |
 | Frozen protocol | Golden bytes, 25k corruptions, CRC, malformed input | Radio/UART electrical integration |
@@ -17,8 +17,8 @@
 | Flight response | Dynamics bounds and real PX4 SIH closed loop | Airframe dynamics and failsafes |
 | Companion computer | Common-frame conversion, packet ingest/relay, stale-state command suppression | Pi power, thermals, UART, watchdog and HIL |
 | Endurance | 300 simulated seconds, 12 nodes, relay routing | Thermal/power/soak testing |
-| Primary mesh demo | Six production companion cores, 1 Hz, delivery/latency/freshness gates, live dashboard | Four physical RF endpoints |
-| Acceptance | Frozen JSON thresholds, source-matched evidence, 4 m operational margin and 22-gate readiness report | Hardware gate extension |
+| Primary mesh demo | Six independent companion processes, 1 Hz, delivery/latency/freshness gates, live dashboard | Physical RF endpoints |
+| Acceptance | Frozen JSON thresholds, source-matched evidence, 4 m operational margin and readiness report | Hardware gate extension |
 
 ## Scenario catalog
 
@@ -39,7 +39,7 @@ software margin before hardware-specific allowances are added.
 ## Model boundary
 
 The LoRa timing equation is exact for configured modem parameters, but propagation
-and CSMA remain abstractions until calibrated against the chosen radio. Motion is
-a point-mass velocity model except for the PX4 SIH runs. The final readiness
-report therefore lists RF, GNSS, Raspberry Pi, electrical, airframe and flight
-tests as explicit hardware-only work.
+and CSMA are intentionally simulated. Motion is a point-mass velocity model
+except for optional PX4 SIH runs. RF, GNSS, Raspberry Pi, electrical, airframe,
+and flight tests are possible future extensions rather than incomplete gates for
+the software-only project.

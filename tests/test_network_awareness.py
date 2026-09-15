@@ -5,7 +5,12 @@ from pathlib import Path
 import unittest
 
 from drone_sims.collision import KinematicState, Vec3
-from drone_sims.mesh_demo import run_mesh_demo
+from drone_sims.mesh_demo import (
+    MAX_DEMO_NODES,
+    DemoRequirements,
+    demo_trajectories,
+    run_mesh_demo,
+)
 from drone_sims.mesh_visualization import build_mesh_dashboard
 from drone_sims.network_awareness import (
     LinkQualityTable,
@@ -20,6 +25,28 @@ def state(node: int, x: float, y: float = 0.0, vx: float = 0.0) -> KinematicStat
 
 
 class NetworkAwarenessTests(unittest.TestCase):
+    def test_demo_supports_a_larger_but_bounded_node_count(self) -> None:
+        self.assertEqual(len(demo_trajectories(MAX_DEMO_NODES)), MAX_DEMO_NODES)
+        with self.assertRaises(ValueError):
+            demo_trajectories(MAX_DEMO_NODES + 1)
+
+    def test_process_backend_runs_each_node_separately(self) -> None:
+        requirements = DemoRequirements(
+            minimum_delivery_ratio=0.0,
+            require_preemptive_route=False,
+            require_collision_alert=False,
+        )
+        report = run_mesh_demo(
+            nodes=4,
+            duration_s=0.1,
+            backend="process",
+            requirements=requirements,
+        )
+        process_ids = report["summary"]["process_ids"]
+        self.assertEqual(report["status"], "PASS")
+        self.assertEqual(report["summary"]["backend"], "process")
+        self.assertEqual(len(set(process_ids)), 4)
+
     def test_predicts_link_loss_before_range_is_crossed(self) -> None:
         link = predict_link(
             state(1, 0), state(2, 20, vx=2), now=0,

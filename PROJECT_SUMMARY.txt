@@ -1,16 +1,12 @@
 Drone Awareness Mesh Project Summary
 
-The primary system is a resilient awareness network for four or more simulated
-or props-off drones. Raspberry Pi companion services share position and velocity
-over LoRa, predict degrading links, select multi-hop relay paths before a direct
-link breaks, and report collision risk. The main demo runs six production
-companion cores over a simulated RF medium with a live topology dashboard.
-Flight control is disabled for this demonstration.
+The project is a software testbed for a resilient awareness network of simulated
+drones. Independent companion processes share position and velocity over a LoRa
+RF model, predict degrading links, select multi-hop relay paths before a direct
+link breaks, and report collision risk. The main demo runs six node processes
+with a live topology dashboard. Flight control is disabled.
 
-The current software tests pass, including tests with bad radio packets, GPS
-errors, network problems, and missing commands. The service includes stale-PX4
-suppression, duplicate and replay rejection, multi-hop forwarding, configuration
-for serial LoRa or UDP bench testing, and a systemd watchdog unit. A stationary
-two-radio LoRa/Pi bench test passed at the selected 1 Hz rate. It still needs four-radio mesh, RF
-range and obstruction testing, Raspberry Pi power and thermal validation, real
-Pixhawk/GNSS integration, HIL testing, and flight testing.
+The tests cover damaged packets, GPS errors, network failures, congestion,
+restarts, and missing commands. The six-node configuration is the validated
+target. Runs with 4 to 16 nodes are supported for scale experiments. Hardware,
+radio-range, GNSS, airframe, and real-flight claims are outside the project scope.

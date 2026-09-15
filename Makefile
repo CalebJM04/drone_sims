@@ -36,7 +36,7 @@ mesh-demo:
 	$(PYTHON) -m drone_sims mesh-demo --nodes 6 --duration 20 --realtime --serve 8080
 
 mesh-acceptance:
-	$(PYTHON) -m drone_sims mesh-demo --nodes 6 --duration 15
+	$(PYTHON) -m drone_sims mesh-demo --nodes 6 --duration 15 --backend process
 
 readiness:
 	$(PYTHON) tools/build_readiness_report.py

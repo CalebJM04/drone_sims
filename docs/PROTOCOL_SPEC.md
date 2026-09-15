@@ -1,6 +1,6 @@
 # Drone telemetry protocol v2 (frozen simulation baseline)
 
-Status: **frozen for the pre-hardware baseline**. Any incompatible change must
+Status: **frozen for the software baseline**. Any incompatible change must
 increment the version byte and add a new golden-vector suite. All multibyte
 fields use network byte order (big endian). A frame is exactly 36 bytes.
 
