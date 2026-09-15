@@ -124,7 +124,6 @@ def brute_force_closest_approach(
     horizon: float,
     step: float = 0.002,
 ) -> tuple[float, float]:
-    """Independent sampling oracle used by randomized verification."""
     count = max(1, math.ceil(horizon / step))
     best_time, best_distance = 0.0, math.inf
     for index in range(count + 1):
@@ -133,4 +132,3 @@ def brute_force_closest_approach(
         if distance < best_distance:
             best_time, best_distance = timestamp, distance
     return best_time, best_distance
-

@@ -19,8 +19,17 @@ transport = "serial"
 device = "/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0"
 baud = 115200
 
+[routing]
+mode = "flooding"
+nominal_radio_range_m = 30.0
+lookahead_s = 4.0
+route_margin = 0.90
+link_warning_margin_m = 5.0
+discovery_interval_packets = 5
+
 [safety]
 control_enabled = false
+collision_awareness_enabled = true
 telemetry_interval_s = 1.0
 risk_interval_s = 0.1
 command_interval_s = 0.1

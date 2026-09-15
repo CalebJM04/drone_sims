@@ -6,11 +6,6 @@ import math
 
 @dataclass(frozen=True, slots=True)
 class LoRaModem:
-    """LoRa packet time-on-air model from the Semtech modem equation.
-
-    ``coding_rate`` is the denominator offset: 1 means 4/5, 4 means 4/8.
-    """
-
     spreading_factor: int = 7
     bandwidth_hz: int = 125_000
     coding_rate: int = 1
@@ -68,4 +63,3 @@ COMMON_PROFILES: dict[str, LoRaModem] = {
     "balanced": LoRaModem(spreading_factor=9, bandwidth_hz=125_000, coding_rate=1),
     "long_range": LoRaModem(spreading_factor=12, bandwidth_hz=125_000, coding_rate=1),
 }
-

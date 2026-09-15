@@ -13,12 +13,10 @@ from .scenarios import build
 
 
 def run_network_matrix(seeds: int = 3) -> dict[str, Any]:
-    """Compare PHY, MAC, routing and offered load on the same topology."""
-
     rows: list[dict[str, Any]] = []
     for profile_name, modem in COMMON_PROFILES.items():
         for mac in ("csma", "aloha"):
-            for routing in ("flooding", "relay", "probabilistic"):
+            for routing in ("flooding", "relay", "probabilistic", "proactive"):
                 for interval in (0.5, 1.0):
                     runs = []
                     for seed in range(1, seeds + 1):
@@ -29,6 +27,7 @@ def run_network_matrix(seeds: int = 3) -> dict[str, Any]:
                             relay_nodes=(3, 4),
                             forwarding_probability=0.65,
                             seed=seed,
+                            proactive_range_m=simulation.radio_config.range_m,
                         )
                         simulation.radio_config.modem = modem
                         simulation.radio_config.channel_access = mac

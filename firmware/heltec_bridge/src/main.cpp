@@ -8,9 +8,15 @@
 namespace {
 
 constexpr size_t kFrameSize = 36;
+constexpr size_t kRadioFrameSize = 38;
+constexpr size_t kHostTransmitSize = 40;
+constexpr size_t kHostReceiveSize = 44;
 constexpr uint8_t kMagic = 0xD7;
 constexpr uint8_t kVersion = 0x02;
 constexpr uint8_t kTelemetryType = 0x01;
+constexpr uint8_t kHostTransmitMagic = 0xA5;
+constexpr uint8_t kHostReceiveMagic = 0xA6;
+constexpr uint8_t kHostEnvelopeVersion = 0x01;
 #if defined(HELTEC_TEST_MODE)
 constexpr uint32_t kMaximumReceiveWaitMs = 1000;
 #endif
@@ -52,10 +58,10 @@ uint32_t channelDeferrals = 0;
 #endif
 #if defined(HELTEC_BRIDGE_MODE)
 constexpr size_t kTransmitQueueDepth = 8;
-uint8_t transmitQueue[kTransmitQueueDepth][kFrameSize] = {};
+uint8_t transmitQueue[kTransmitQueueDepth][kRadioFrameSize] = {};
 size_t transmitQueueHead = 0;
 size_t transmitQueueCount = 0;
-uint8_t serialFrame[kFrameSize] = {};
+uint8_t serialFrame[kHostTransmitSize] = {};
 size_t serialFrameLength = 0;
 volatile bool radioPacketReceived = false;
 uint32_t nextChannelAttemptMs = 0;
@@ -74,6 +80,11 @@ void writeU32Be(uint8_t* destination, uint32_t value) {
   destination[3] = static_cast<uint8_t>(value);
 }
 #endif
+
+void writeI16Be(uint8_t* destination, int16_t value) {
+  destination[0] = static_cast<uint8_t>(static_cast<uint16_t>(value) >> 8);
+  destination[1] = static_cast<uint8_t>(value);
+}
 
 uint16_t readU16Be(const uint8_t* source) {
   return static_cast<uint16_t>((static_cast<uint16_t>(source[0]) << 8) |
@@ -99,14 +110,13 @@ void makeTelemetryFrame(uint8_t* frame, uint16_t sequence) {
   frame[0] = kMagic;
   frame[1] = kVersion;
   frame[2] = kTelemetryType;
-  frame[3] = 0;  // flags
-  frame[4] = 0;  // no forwarding during the direct-link test
+  frame[3] = 0;
+  frame[4] = 0;
   frame[5] = 0;
   writeU16Be(frame + 6, NODE_ID);
   writeU16Be(frame + 8, sequence);
   writeU16Be(frame + 10, static_cast<uint16_t>(0xB000U | NODE_ID));
   writeU32Be(frame + 12, millis());
-  // A distinct, valid NED position in centimetres for each diagnostic node.
   writeU32Be(frame + 16, static_cast<uint32_t>(NODE_ID * 100));
   const uint16_t crc = crc16CcittFalse(frame, kFrameSize - 2);
   writeU16Be(frame + kFrameSize - 2, crc);
@@ -128,7 +138,6 @@ bool deadlineReached(uint32_t now, uint32_t deadline) {
 
 #if defined(HELTEC_TEST_MODE)
 void scheduleRegularTransmit() {
-  // Jitter prevents two independently booted peers from phase-locking.
   nextTransmitMs = millis() + 900U + (esp_random() % 201U);
 }
 
@@ -207,28 +216,25 @@ void receiveUntil(uint32_t timeoutMs) {
 #if defined(HELTEC_BRIDGE_MODE)
 void IRAM_ATTR onRadioPacketReceived() { radioPacketReceived = true; }
 
-void enqueueTransmit(const uint8_t* frame) {
-  // If the host outruns the radio, prefer current position data over stale data.
+void enqueueTransmit(const uint8_t* radioFrame) {
+  // Drop the oldest packet if the queue fills up.
   if (transmitQueueCount == kTransmitQueueDepth) {
     transmitQueueHead = (transmitQueueHead + 1) % kTransmitQueueDepth;
     --transmitQueueCount;
   }
   const size_t tail =
       (transmitQueueHead + transmitQueueCount) % kTransmitQueueDepth;
-  std::memcpy(transmitQueue[tail], frame, kFrameSize);
+  std::memcpy(transmitQueue[tail], radioFrame, kRadioFrameSize);
   const bool queueWasEmpty = transmitQueueCount == 0;
   ++transmitQueueCount;
   if (queueWasEmpty) {
-    // Hosts commonly emit telemetry on exact one-second boundaries. Independent
-    // jitter prevents peers from phase-locking into a persistent collision or
-    // turnaround race before CAD can distinguish which one started first.
     nextChannelAttemptMs = millis() + 20U + (esp_random() % 181U);
   }
 }
 
 void resynchronizeSerialFrame() {
   for (size_t index = 1; index < serialFrameLength; ++index) {
-    if (serialFrame[index] == kMagic) {
+    if (serialFrame[index] == kHostTransmitMagic) {
       const size_t remaining = serialFrameLength - index;
       std::memmove(serialFrame, serialFrame + index, remaining);
       serialFrameLength = remaining;
@@ -245,15 +251,20 @@ void ingestHostSerial() {
       break;
     }
     const uint8_t byte = static_cast<uint8_t>(value);
-    if (serialFrameLength == 0 && byte != kMagic) {
+    if (serialFrameLength == 0 && byte != kHostTransmitMagic) {
       continue;
     }
     serialFrame[serialFrameLength++] = byte;
-    if (serialFrameLength != kFrameSize) {
+    if (serialFrameLength != kHostTransmitSize) {
       continue;
     }
-    if (validTelemetryFrame(serialFrame, serialFrameLength)) {
-      enqueueTransmit(serialFrame);
+    if (serialFrame[1] == kHostEnvelopeVersion &&
+        validTelemetryFrame(serialFrame + 4, kFrameSize)) {
+      uint8_t radioFrame[kRadioFrameSize] = {};
+      radioFrame[0] = serialFrame[2];
+      radioFrame[1] = serialFrame[3];
+      std::memcpy(radioFrame + 2, serialFrame + 4, kFrameSize);
+      enqueueTransmit(radioFrame);
       serialFrameLength = 0;
     } else {
       resynchronizeSerialFrame();
@@ -270,11 +281,18 @@ void forwardReceivedRadioPacket() {
   uint8_t frame[255] = {};
   const size_t length = radio.getPacketLength();
   const int16_t state = radio.readData(frame, length);
-  if (state == RADIOLIB_ERR_NONE && validTelemetryFrame(frame, length)) {
-    Serial.write(frame, kFrameSize);
+  if (state == RADIOLIB_ERR_NONE && length == kRadioFrameSize &&
+      validTelemetryFrame(frame + 2, kFrameSize)) {
+    uint8_t envelope[kHostReceiveSize] = {};
+    envelope[0] = kHostReceiveMagic;
+    envelope[1] = kHostEnvelopeVersion;
+    envelope[2] = frame[0];
+    envelope[3] = frame[1];
+    writeI16Be(envelope + 4, static_cast<int16_t>(radio.getRSSI() * 10.0f));
+    writeI16Be(envelope + 6, static_cast<int16_t>(radio.getSNR() * 10.0f));
+    std::memcpy(envelope + 8, frame + 2, kFrameSize);
+    Serial.write(envelope, kHostReceiveSize);
   }
-  // Explicitly re-arm continuous RX and clear the completed packet IRQ. This
-  // is required for consistent behavior across both SX1276 and SX1262.
   radioPacketReceived = false;
   radio.startReceive();
 }
@@ -285,9 +303,6 @@ void transmitQueuedFrame() {
     return;
   }
 
-  // RxDone, CADDone and TxDone share interrupt lines on these radios. Detach
-  // the receive callback while changing modes so non-RX IRQs cannot make the
-  // host see a stale RX/TX FIFO as a newly received packet.
   radio.clearPacketReceivedAction();
   radioPacketReceived = false;
   radio.standby();
@@ -301,7 +316,7 @@ void transmitQueuedFrame() {
   }
 
   const int16_t transmitState =
-      radio.transmit(transmitQueue[transmitQueueHead], kFrameSize);
+      radio.transmit(transmitQueue[transmitQueueHead], kRadioFrameSize);
   radioPacketReceived = false;
   if (transmitState == RADIOLIB_ERR_NONE) {
     transmitQueueHead = (transmitQueueHead + 1) % kTransmitQueueDepth;
@@ -316,7 +331,7 @@ void transmitQueuedFrame() {
 }
 #endif
 
-}  // namespace
+}
 
 void setup() {
 #if defined(HELTEC_BRIDGE_MODE)
@@ -365,9 +380,6 @@ void loop() {
   if (deadlineReached(now, nextTransmitMs)) {
     transmitFrame();
   } else {
-    // Stay in RX continuously until the next local transmit deadline. Short,
-    // repeated receive windows can cut a packet in half at every boundary and
-    // create artificial direction-dependent loss when two peers phase-lock.
     const uint32_t untilTransmit = nextTransmitMs - now;
     receiveUntil(min(untilTransmit, kMaximumReceiveWaitMs));
   }

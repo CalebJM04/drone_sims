@@ -221,11 +221,7 @@
       "pymavlink": true,
       "pyserial": true,
       "ready": true,
-      "serial_devices": [
-        "/dev/serial",
-        "/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0",
-        "/dev/ttyUSB2"
-      ]
+      "serial_devices": []
     },
     "docker": {
       "binary": "/usr/bin/docker",
@@ -241,12 +237,167 @@
       "ready": false
     }
   },
+  "mesh_demo": {
+    "checks": {
+      "collision_awareness": true,
+      "delivery_ratio": true,
+      "minimum_nodes": true,
+      "observation_only": true,
+      "p95_latency": true,
+      "preemptive_route": true,
+      "protocol_integrity": true,
+      "state_age": true
+    },
+    "events": [
+      {
+        "current_path": [
+          1,
+          2
+        ],
+        "observed_relay_transmitters": [
+          3
+        ],
+        "planned_path": [
+          1,
+          3,
+          2
+        ],
+        "source": 1,
+        "target": 2,
+        "time_s": 1.5,
+        "type": "preemptive_route_handoff"
+      },
+      {
+        "alerts": [
+          {
+            "closest_distance_m": 6.0,
+            "current_distance_m": 8.173279635495167,
+            "node_id": 1,
+            "peer_id": 5,
+            "reason": "risk",
+            "risk": true,
+            "severity": "danger",
+            "time_to_closest_s": 5.55,
+            "uncertainty_margin_m": 3.556448588479805
+          },
+          {
+            "closest_distance_m": 6.0,
+            "current_distance_m": 8.173279635495167,
+            "node_id": 1,
+            "peer_id": 6,
+            "reason": "risk",
+            "risk": true,
+            "severity": "danger",
+            "time_to_closest_s": 5.55,
+            "uncertainty_margin_m": 3.556448588479805
+          },
+          {
+            "closest_distance_m": 0.0,
+            "current_distance_m": 11.1,
+            "node_id": 5,
+            "peer_id": 6,
+            "reason": "risk",
+            "risk": true,
+            "severity": "danger",
+            "time_to_closest_s": 5.55,
+            "uncertainty_margin_m": 3.556448588479805
+          },
+          {
+            "closest_distance_m": 6.0,
+            "current_distance_m": 8.173279635495167,
+            "node_id": 5,
+            "peer_id": 1,
+            "reason": "risk",
+            "risk": true,
+            "severity": "danger",
+            "time_to_closest_s": 5.55,
+            "uncertainty_margin_m": 3.2797569364969714
+          },
+          {
+            "closest_distance_m": 0.0,
+            "current_distance_m": 11.1,
+            "node_id": 6,
+            "peer_id": 5,
+            "reason": "risk",
+            "risk": true,
+            "severity": "danger",
+            "time_to_closest_s": 5.55,
+            "uncertainty_margin_m": 3.2797569364969714
+          },
+          {
+            "closest_distance_m": 6.0,
+            "current_distance_m": 8.173279635495167,
+            "node_id": 6,
+            "peer_id": 1,
+            "reason": "risk",
+            "risk": true,
+            "severity": "danger",
+            "time_to_closest_s": 5.55,
+            "uncertainty_margin_m": 3.2797569364969714
+          }
+        ],
+        "time_s": 2.5,
+        "type": "collision_awareness_alert"
+      }
+    ],
+    "metadata": {
+      "command": "drone-sims mesh-demo",
+      "generated_at_utc": "2026-09-15T17:46:47.159049+00:00",
+      "git": {
+        "dirty": true,
+        "revision": "b87f5da25d392fdfd2bac0c431c8e26e241f4bc3"
+      },
+      "parameters": {
+        "duration_s": 15.0,
+        "nodes": 6,
+        "realtime": false
+      },
+      "px4_image": null,
+      "runtime": {
+        "platform": "Linux-6.8.0-53-generic-x86_64-with-glibc2.39",
+        "pymavlink": "2.4.49",
+        "python": "3.12.3"
+      },
+      "schema_version": 1,
+      "seeds": [
+        31
+      ],
+      "source_sha256": "17b9240c83ae2ba7149b092c190ea27d6afc8ac4cef00b3024c8fc4ac64583e6"
+    },
+    "requirements": {
+      "maximum_control_commands": 0,
+      "maximum_p95_latency_ms": 1500.0,
+      "maximum_state_age_s": 3.0,
+      "minimum_delivery_ratio": 0.9,
+      "minimum_nodes": 4,
+      "require_collision_alert": true,
+      "require_preemptive_route": true
+    },
+    "status": "PASS",
+    "summary": {
+      "collision_awareness_alerts": 1,
+      "control_commands": 0,
+      "corrupt_frames_rejected": 0,
+      "delivery_ratio": 0.9644444444444444,
+      "duration_s": 15.0,
+      "half_duplex_losses": 253,
+      "maximum_hops": 3,
+      "maximum_state_age_s": 2.182358316655346,
+      "nodes": 6,
+      "originated_packets": 90,
+      "p95_latency_ms": 520.4093224915578,
+      "preemptive_route_handoffs": 1,
+      "transmission_attempts": 1596,
+      "undetected_corruptions": 0,
+      "unique_node_deliveries": 434
+    }
+  },
   "metadata": {
     "command": "drone-sims verify",
-    "generated_at_utc": "2026-09-10T18:29:35.029434+00:00",
+    "generated_at_utc": "2026-09-15T17:47:12.446677+00:00",
     "git": {
       "dirty": true,
-      "revision": "52d93255e63643e3dc7c05e24058a6ccad494db9"
+      "revision": "b87f5da25d392fdfd2bac0c431c8e26e241f4bc3"
     },
     "parameters": {
       "campaign_seeds": 100,
@@ -364,7 +515,7 @@
       99,
       100
     ],
-    "source_sha256": "171e4e6c21e8df2ea7ea86ac66c2ac499cba7363e26903bf4b7620d35f643643"
+    "source_sha256": "17b9240c83ae2ba7149b092c190ea27d6afc8ac4cef00b3024c8fc4ac64583e6"
   },
   "network_and_system_campaign": {
     "minimum_separation_requirement_m": 4.0,
@@ -570,30 +721,30 @@
   },
   "px4_sitl": {
     "after_avoidance_local_position": [
-      0.9636508822441101,
-      3.5642080307006836,
-      -2.9295654296875,
-      -0.03933963552117348,
-      1.2799464464187622,
-      -0.006379218772053719
+      0.35105642676353455,
+      4.193484306335449,
+      -2.934906005859375,
+      0.0065449997782707214,
+      1.243564248085022,
+      -0.026350388303399086
     ],
     "airborne_local_position": [
-      0.11262455582618713,
-      -0.06837279349565506,
-      -2.958953857421875,
-      -0.09243637323379517,
-      0.07344480603933334,
-      -0.03856724500656128
+      0.08088934421539307,
+      -0.1106991246342659,
+      -2.960174560546875,
+      -0.07154395431280136,
+      0.09015192091464996,
+      -0.040700048208236694
     ],
-    "altitude_gain_m": 2.95440673828125,
+    "altitude_gain_m": 2.955718994140625,
     "arm_ack": 0,
     "before_avoidance_local_position": [
-      0.22157633304595947,
-      0.0482315719127655,
-      -3.03704833984375,
-      -0.10710542649030685,
-      0.018209747970104218,
-      0.028767678886651993
+      0.11247643083333969,
+      -0.08493785560131073,
+      -3.013519287109375,
+      -0.05911923572421074,
+      -0.011834729462862015,
+      -0.0038234840612858534
     ],
     "checks": {
       "arm_accepted": true,
@@ -613,29 +764,29 @@
     "disarm_ack": 0,
     "image": "px4io/px4-sitl@sha256:01866d912ac22ca6119a996b830cf628a6d47dfb60fdccc41cd9f44b62935a44",
     "initial_local_position": [
-      -0.023986538872122765,
-      -0.014157244935631752,
-      -0.004547119140625,
-      0.004249466583132744,
-      -0.003856724826619029,
-      0.0022926009260118008
+      -0.023188408464193344,
+      -0.014604847878217697,
+      -0.00445556640625,
+      0.006338480859994888,
+      -0.002711678622290492,
+      0.0023699558805674314
     ],
     "land_ack": 0,
     "landed_local_position": [
-      1.1270748376846313,
-      5.320992469787598,
-      -0.125213623046875,
-      0.17097651958465576,
-      0.30170369148254395,
-      0.003878100076690316
+      0.6034278273582458,
+      5.826923370361328,
+      0.110137939453125,
+      0.06068269908428192,
+      0.37113621830940247,
+      0.02805430255830288
     ],
-    "lateral_response_m": 3.593433608029856,
+    "lateral_response_m": 4.285069032140518,
     "metadata": {
       "command": "tools/run_px4_sitl.py",
-      "generated_at_utc": "2026-09-10T18:28:26.475766+00:00",
+      "generated_at_utc": "2026-09-15T17:45:59.244938+00:00",
       "git": {
         "dirty": true,
-        "revision": "52d93255e63643e3dc7c05e24058a6ccad494db9"
+        "revision": "b87f5da25d392fdfd2bac0c431c8e26e241f4bc3"
       },
       "parameters": {},
       "px4_image": "px4io/px4-sitl@sha256:01866d912ac22ca6119a996b830cf628a6d47dfb60fdccc41cd9f44b62935a44",
@@ -646,7 +797,7 @@
       },
       "schema_version": 1,
       "seeds": [],
-      "source_sha256": "171e4e6c21e8df2ea7ea86ac66c2ac499cba7363e26903bf4b7620d35f643643"
+      "source_sha256": "17b9240c83ae2ba7149b092c190ea27d6afc8ac4cef00b3024c8fc4ac64583e6"
     },
     "passed": 12,
     "takeoff_ack": 0,

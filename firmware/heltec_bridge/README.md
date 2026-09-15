@@ -36,9 +36,14 @@ pio run -e heltec_v2_bridge
 pio run -e heltec_v3_bridge
 ```
 
-Bridge builds accept a continuous stream of CRC-valid 36-byte project frames
-from USB serial and transmit them over LoRa. Valid LoRa frames are written back
-to USB as the same raw 36 bytes. The firmware emits no application log text on
-that port, so it can be used directly by `SerialFrameRadio` on the Pi. A small
-queue, channel-activity detection, and receive interrupts keep the bridge
-responsive while avoiding most same-channel collisions.
+Bridge builds use a small binary USB envelope around the CRC-valid 36-byte
+application frame. Host-to-bridge records contain the immediate transmitter
+node ID. Bridge-to-host records also contain that ID plus RSSI and SNR in tenths,
+so the companion can maintain real link-quality history without changing the
+frozen telemetry protocol. `SerialFrameRadio` constructs and parses these
+records. Reflash existing bridge boards after upgrading the Python service.
+
+The over-air record is 38 bytes: immediate-transmitter ID followed by the exact
+36-byte application frame. A small queue, channel-activity detection, and receive
+interrupts keep the bridge responsive while avoiding most same-channel
+collisions.

@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "drone-sims"
-version = "0.2.0"
-description = "Comprehensive simulation and verification suite for a multi-hop LoRa UAV collision-avoidance system"
+version = "0.3.0"
+description = "Simulation, live demo, and verification suite for a proactive multi-hop LoRa UAV awareness mesh"
 requires-python = ">=3.11"
 dependencies = []
 

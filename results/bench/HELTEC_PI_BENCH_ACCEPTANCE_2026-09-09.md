@@ -8,6 +8,11 @@ The available hardware passed the stationary functional bench tests. The
 Pixhawk, GNSS, airframe, power system, and motors were not available, so this is
 not flight-hardware acceptance.
 
+This historical acceptance used the original raw-36-byte bridge. The current
+metadata-aware bridge must be reflashed and the two-radio regression repeated;
+the earlier PDR numbers remain useful baseline evidence but do not validate the
+new bridge envelope.
+
 ## Configuration
 
 - Aircraft 1 surrogate: Raspberry Pi and Heltec WiFi LoRa 32 V2 / SX1276

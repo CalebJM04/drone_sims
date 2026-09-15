@@ -1,6 +1,4 @@
 #!/usr/bin/env python3
-"""Observe two Heltec diagnostic firmwares and summarize their RF exchange."""
-
 from __future__ import annotations
 
 import argparse
@@ -78,8 +76,6 @@ def main() -> int:
             rejected += 1
 
     links = {}
-    # A board may already be running before the monitor attaches, in which case
-    # its one-time boot event is legitimately absent from this capture.
     passed = all(state == 0 for state in boots.values())
     for source, destination in ((2, 3), (3, 2)):
         sent = tx.get(source, set())

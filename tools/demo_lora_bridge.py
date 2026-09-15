@@ -1,6 +1,4 @@
 #!/usr/bin/env python3
-"""Command-line demo for a Heltec running the binary bridge firmware."""
-
 from __future__ import annotations
 
 import argparse
@@ -9,6 +7,7 @@ import time
 
 from drone_sims.companion_io import SerialFrameRadio
 from drone_sims.protocol import ProtocolError, TelemetryFrame, decode, encode
+from drone_sims.radio_types import RadioReception
 
 
 def main() -> int:
@@ -25,7 +24,9 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    radio = SerialFrameRadio(args.device)
+    if args.node_id is None:
+        parser.error("--node-id is required by the metadata-aware bridge")
+    radio = SerialFrameRadio(args.device, node_id=args.node_id)
     if args.start_at_unix is not None:
         while time.time() < args.start_at_unix:
             time.sleep(0.01)
@@ -60,7 +61,8 @@ def main() -> int:
                 transmitted += 1
                 next_transmit += args.interval
 
-            for payload in radio.receive():
+            for reception in radio.receive():
+                payload = reception.payload if isinstance(reception, RadioReception) else reception
                 try:
                     frame = decode(payload)
                 except ProtocolError:
@@ -70,7 +72,9 @@ def main() -> int:
                 if not args.quiet:
                     print(
                         f"RX <- node={frame.source} seq={frame.sequence} "
-                        f"position_cm={frame.position_cm}",
+                        f"position_cm={frame.position_cm} "
+                        f"rssi={getattr(reception, 'rssi_dbm', None)} "
+                        f"snr={getattr(reception, 'snr_db', None)}",
                         flush=True,
                     )
             time.sleep(0.01)

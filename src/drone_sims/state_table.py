@@ -24,8 +24,7 @@ class NeighborTable:
         self.rejected_old = 0
         self.evictions = 0
         self._retired_boots: dict[int, list[int]] = {}
-        # Replay metadata deliberately survives state expiry. A radio outage
-        # must not make an old packet look new when the neighbor reappears.
+        # Keep old sessions around so delayed packets stay invalid.
         self._sessions: dict[int, tuple[int, int, int]] = {}
 
     def update(self, frame: TelemetryFrame, received_at: float) -> bool:
@@ -34,9 +33,6 @@ class NeighborTable:
         if session is not None:
             active_boot, last_sequence, last_timestamp_ms = session
             if frame.boot_id == active_boot:
-                # Sequence comparison is unambiguous for gaps shorter than half
-                # the uint16 range. A synchronized timestamp also permits clean
-                # recovery after a longer outage without accepting old packets.
                 if not sequence_is_newer(frame.sequence, last_sequence) and (
                     frame.timestamp_ms <= last_timestamp_ms
                 ):

@@ -1,15 +1,16 @@
-Drone Project Summary
+Drone Awareness Mesh Project Summary
 
-I built a simulation for a drone collision avoidance system. It models how the
-drones share their location, detect a possible collision, and choose a safer
-direction. A Raspberry Pi companion service now reads global position and
-velocity from PX4, converts every drone into a shared local coordinate frame,
-exchanges LoRa telemetry, and streams bounded avoidance velocity commands.
+The primary system is a resilient awareness network for four or more simulated
+or props-off drones. Raspberry Pi companion services share position and velocity
+over LoRa, predict degrading links, select multi-hop relay paths before a direct
+link breaks, and report collision risk. The main demo runs six production
+companion cores over a simulated RF medium with a live topology dashboard.
+Flight control is disabled for this demonstration.
 
 The current software tests pass, including tests with bad radio packets, GPS
 errors, network problems, and missing commands. The service includes stale-PX4
 suppression, duplicate and replay rejection, multi-hop forwarding, configuration
 for serial LoRa or UDP bench testing, and a systemd watchdog unit. A stationary
-two-radio LoRa/Pi bench test passed at the selected 1 Hz rate. It still needs RF
+two-radio LoRa/Pi bench test passed at the selected 1 Hz rate. It still needs four-radio mesh, RF
 range and obstruction testing, Raspberry Pi power and thermal validation, real
 Pixhawk/GNSS integration, HIL testing, and flight testing.

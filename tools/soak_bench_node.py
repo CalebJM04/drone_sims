@@ -1,6 +1,4 @@
 #!/usr/bin/env python3
-"""Run one complete fake-PX4/companion/Heltec node for a timed soak."""
-
 from __future__ import annotations
 
 import argparse
@@ -45,6 +43,9 @@ def main() -> int:
     parser.add_argument("--duration", type=float, default=3600.0)
     parser.add_argument("--progress-interval", type=float, default=60.0)
     parser.add_argument("--minimum-delivery-ratio", type=float, default=0.95)
+    parser.add_argument("--expected-peers", type=int, default=1)
+    parser.add_argument("--minimum-neighbors", type=int, default=1)
+    parser.add_argument("--require-link-metadata", action="store_true")
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
     if args.duration <= 0:
@@ -53,6 +54,8 @@ def main() -> int:
         parser.error("--progress-interval must be positive")
     if not 0.0 <= args.minimum_delivery_ratio <= 1.0:
         parser.error("--minimum-delivery-ratio must be between 0 and 1")
+    if args.expected_peers <= 0 or args.minimum_neighbors <= 0:
+        parser.error("--expected-peers and --minimum-neighbors must be positive")
 
     state: dict[str, Any] = {}
     fake = subprocess.Popen(
@@ -166,8 +169,14 @@ def main() -> int:
     stats = snapshot.get("stats", {})
     telemetry_sent = int(stats.get("telemetry_sent", 0))
     received = int(stats.get("received", 0))
+    expected_deliveries = telemetry_sent * args.expected_peers
     estimated_delivery_ratio = (
-        min(1.0, received / telemetry_sent) if telemetry_sent > 0 else 0.0
+        min(1.0, received / expected_deliveries) if expected_deliveries > 0 else 0.0
+    )
+    link_quality = snapshot.get("link_quality", [])
+    metadata_available = bool(link_quality) and all(
+        item.get("rssi_dbm") is not None and item.get("snr_db") is not None
+        for item in link_quality
     )
     passed = (
         not interrupted
@@ -176,7 +185,7 @@ def main() -> int:
         and fake.returncode == 0
         and snapshot.get("own_state_fresh") is True
         and snapshot.get("control_enabled") is False
-        and int(snapshot.get("neighbors", 0)) >= 1
+        and int(snapshot.get("neighbors", 0)) >= args.minimum_neighbors
         and telemetry_sent > 0
         and received > 0
         and estimated_delivery_ratio >= args.minimum_delivery_ratio
@@ -184,6 +193,7 @@ def main() -> int:
         and stats.get("protocol_rejections", 1) == 0
         and stats.get("stale_own_state_events", 1) == 0
         and stats.get("commands_sent", 1) == 0
+        and (metadata_available or not args.require_link_metadata)
     )
     result = {
         "metadata": collect_metadata(
@@ -193,6 +203,9 @@ def main() -> int:
                 "duration_s": args.duration,
                 "minimum_delivery_ratio": args.minimum_delivery_ratio,
                 "node_id": args.node_id,
+                "expected_peers": args.expected_peers,
+                "minimum_neighbors": args.minimum_neighbors,
+                "require_link_metadata": args.require_link_metadata,
             },
         ),
         "event": "soak_summary",
@@ -207,7 +220,11 @@ def main() -> int:
         "fake_px4_non_json_output": state.get("fake_non_json_output", []),
         "companion_snapshots": state.get("companion_lines", 0),
         "minimum_delivery_ratio": args.minimum_delivery_ratio,
+        "expected_peers": args.expected_peers,
+        "minimum_neighbors": args.minimum_neighbors,
         "estimated_delivery_ratio": round(estimated_delivery_ratio, 6),
+        "link_metadata_available": metadata_available,
+        "link_quality": link_quality,
         "stats": stats,
         "neighbors": snapshot.get("neighbors"),
         "px4": snapshot.get("px4", {}),
@@ -221,8 +238,6 @@ def main() -> int:
     try:
         print(json.dumps(result, sort_keys=True), flush=True)
     except BrokenPipeError:
-        # The evidence file has already been saved; a closed SSH stdout must not
-        # turn an orderly remote shutdown into an unhandled exception.
         pass
     return 0 if passed else 1
 

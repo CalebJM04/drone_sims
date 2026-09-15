@@ -1,5 +1,12 @@
 # Hardware recommendation: three aircraft and two ground stations
 
+> Revised project scope: the primary deliverable is now a four-or-more-node
+> network demonstration, not a flight demonstration. The airframe bill below is
+> retained for possible future work. For the current project, prioritize four
+> Linux hosts plus four metadata-aware Heltec LoRa bridges; props-off drone frames
+> are optional display mounts. The existing two-radio bench requires two more RF
+> endpoints to reach physical four-node acceptance.
+
 Snapshot date: 2026-09-09. Prices are planning estimates in US dollars before
 tax and shipping; confirm stock, local radio rules, and connector variants before
 ordering.

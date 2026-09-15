@@ -2,37 +2,90 @@ from __future__ import annotations
 
 import os
 import socket
+import struct
 
 from .collision import KinematicState, Vec3
 from .companion import global_to_local_ned
 from .mavlink_codec import MavlinkUnavailable, VelocityCommand
 from .protocol import FRAME_SIZE, MAGIC, ProtocolError, decode
+from .radio_types import RadioReception
+
+
+BRIDGE_TX_MAGIC = 0xA5
+BRIDGE_RX_MAGIC = 0xA6
+BRIDGE_ENVELOPE_VERSION = 1
+_BRIDGE_TX_HEADER = struct.Struct("!BBH")
+_BRIDGE_RX_HEADER = struct.Struct("!BBHhh")
+BRIDGE_TX_SIZE = _BRIDGE_TX_HEADER.size + FRAME_SIZE
+BRIDGE_RX_SIZE = _BRIDGE_RX_HEADER.size + FRAME_SIZE
+
+
+def encode_bridge_transmit(node_id: int, payload: bytes) -> bytes:
+    if not 1 <= node_id <= 0xFFFF:
+        raise ValueError("bridge node_id must be between 1 and 65535")
+    if len(payload) != FRAME_SIZE:
+        raise ValueError(f"radio payload must be exactly {FRAME_SIZE} bytes")
+    return _BRIDGE_TX_HEADER.pack(BRIDGE_TX_MAGIC, BRIDGE_ENVELOPE_VERSION, node_id) + payload
+
+
+def decode_bridge_reception(data: bytes) -> RadioReception:
+    if len(data) != BRIDGE_RX_SIZE:
+        raise ValueError(f"bridge reception must be {BRIDGE_RX_SIZE} bytes")
+    magic, version, sender_id, rssi_tenths, snr_tenths = _BRIDGE_RX_HEADER.unpack(
+        data[: _BRIDGE_RX_HEADER.size]
+    )
+    if magic != BRIDGE_RX_MAGIC or version != BRIDGE_ENVELOPE_VERSION:
+        raise ValueError("unsupported bridge reception envelope")
+    if sender_id == 0:
+        raise ValueError("bridge reception sender_id must be non-zero")
+    return RadioReception(
+        data[_BRIDGE_RX_HEADER.size :],
+        sender_id=sender_id,
+        rssi_dbm=rssi_tenths / 10.0,
+        snr_db=snr_tenths / 10.0,
+    )
 
 
 class SerialFrameRadio:
-    """Fixed-size telemetry framing over a transparent UART LoRa modem."""
-
-    def __init__(self, device: str, baud: int = 115_200) -> None:
+    def __init__(self, device: str, baud: int = 115_200, *, node_id: int = 1) -> None:
         try:
             import serial
         except ImportError as error:
             raise RuntimeError("install the 'hardware' extra to use a serial LoRa modem") from error
         self.serial = serial.Serial(device, baudrate=baud, timeout=0)
         self._buffer = bytearray()
+        self.node_id = node_id
 
-    def receive(self) -> list[bytes]:
+    def receive(self) -> list[bytes | RadioReception]:
         waiting = self.serial.in_waiting
         if waiting:
             self._buffer.extend(self.serial.read(waiting))
-        frames: list[bytes] = []
+        frames: list[bytes | RadioReception] = []
         while self._buffer:
-            try:
-                start = self._buffer.index(MAGIC)
-            except ValueError:
+            starts = [
+                index
+                for marker in (MAGIC, BRIDGE_RX_MAGIC)
+                if (index := self._buffer.find(bytes([marker]))) >= 0
+            ]
+            if not starts:
                 self._buffer.clear()
                 break
+            start = min(starts)
             if start:
                 del self._buffer[:start]
+            if self._buffer[0] == BRIDGE_RX_MAGIC:
+                if len(self._buffer) < BRIDGE_RX_SIZE:
+                    break
+                candidate = bytes(self._buffer[:BRIDGE_RX_SIZE])
+                try:
+                    reception = decode_bridge_reception(candidate)
+                    decode(reception.payload)
+                except (ProtocolError, ValueError):
+                    del self._buffer[0]
+                    continue
+                frames.append(reception)
+                del self._buffer[:BRIDGE_RX_SIZE]
+                continue
             if len(self._buffer) < FRAME_SIZE:
                 break
             candidate = bytes(self._buffer[:FRAME_SIZE])
@@ -40,28 +93,22 @@ class SerialFrameRadio:
             try:
                 decode(candidate)
             except ProtocolError:
-                # Preserve the bad candidate for service statistics, but advance
-                # only one byte so an inserted/dropped byte cannot permanently
-                # destroy framing for every subsequent packet.
                 del self._buffer[0]
             else:
                 del self._buffer[:FRAME_SIZE]
         return frames
 
     def send(self, payload: bytes) -> None:
-        if len(payload) != FRAME_SIZE:
-            raise ValueError(f"radio payload must be exactly {FRAME_SIZE} bytes")
-        written = self.serial.write(payload)
-        if written != len(payload):
-            raise OSError(f"short radio write: {written}/{len(payload)} bytes")
+        envelope = encode_bridge_transmit(self.node_id, payload)
+        written = self.serial.write(envelope)
+        if written != len(envelope):
+            raise OSError(f"short radio write: {written}/{len(envelope)} bytes")
 
     def close(self) -> None:
         self.serial.close()
 
 
 class UdpRadio:
-    """Packet-preserving bench/SITL transport; not an RF model."""
-
     def __init__(self, bind: tuple[str, int], peer: tuple[str, int]) -> None:
         self.peer = peer
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -87,8 +134,6 @@ class UdpRadio:
 
 
 class MavlinkPx4:
-    """PX4 GLOBAL_POSITION_INT input and local-NED velocity-setpoint output."""
-
     def __init__(
         self,
         connection: str,

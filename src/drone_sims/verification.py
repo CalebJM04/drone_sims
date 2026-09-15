@@ -15,6 +15,7 @@ from .integrations import readiness
 from .protocol import CrcError, ProtocolError, TelemetryFrame, decode, encode
 from .scenarios import CAMPAIGN_SCENARIOS, build
 from .tracking import AlphaBetaTracker, assess_uncertain
+from .mesh_demo import run_mesh_demo
 from .provenance import collect_metadata
 from .reporting import verification_text
 
@@ -297,6 +298,7 @@ def run_full_verification(
     output_path = Path(output)
     output_path.mkdir(parents=True, exist_ok=True)
     tools = readiness()
+    mesh_report = run_mesh_demo(nodes=6, duration_s=15.0, seed=31)
     endurance_runs = [
         build("endurance", seed, event_logging=False).run()
         for seed in range(7, 7 + endurance_seeds)
@@ -331,10 +333,18 @@ def run_full_verification(
             ),
         },
         "integration_readiness": tools,
+        "mesh_demo": {
+            key: mesh_report[key]
+            for key in ("metadata", "status", "checks", "requirements", "summary", "events")
+        },
     }
     px4_report_path = output_path / "px4_sitl.json"
     if px4_report_path.exists():
         report["px4_sitl"] = json.loads(px4_report_path.read_text(encoding="utf-8"))
     (output_path / "verification.json").write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    (output_path / "mesh_demo.json").write_text(
+        json.dumps(mesh_report, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
     (output_path / "results.txt").write_text(verification_text(report), encoding="utf-8")
     return report

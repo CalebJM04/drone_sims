@@ -21,7 +21,6 @@ def fixed_point_assess(
     safety_distance_cm: int,
     horizon_ms: int,
 ) -> FixedAssessment:
-    """Independent integer model used to catch embedded numeric regressions."""
     pa = [round(value * 100.0) for value in own.position.as_list()]
     pb = [round(value * 100.0) for value in peer.position.as_list()]
     va = [round(value * 100.0) for value in own.velocity.as_list()]

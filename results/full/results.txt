@@ -1,6 +1,6 @@
 Drone simulation results
 
-Overall: PASS (14/14 checks passed)
+Overall: PASS (22/22 checks passed)
 Simulation checks: 13/13 passed
 Scenario runs: 1500
 Corrupted packets caught: 25000/25000
@@ -15,9 +15,13 @@ fast LoRa, CSMA, flooding, 1.0 second updates
 Average packet delivery: 77.8%
 Average delay: 516 ms
 
+Primary 4+ node mesh demo
+6 nodes, 96.4% delivery, 520 ms p95, 2.18 s maximum state age
+Handoffs: 1; collision alerts: 1; control commands: 0
+
 PX4 basic test: 12/12 passed
 PX4 collision test: 12/12 passed
-PX4 minimum separation: 8.31 m
+PX4 minimum separation: 7.90 m
 
 The software and simulation checks passed. This does not mean the system is ready
 for real flights. Radio range, GNSS, Raspberry Pi power, Pixhawk wiring, and the

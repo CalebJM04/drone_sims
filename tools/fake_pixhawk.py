@@ -1,6 +1,4 @@
 #!/usr/bin/env python3
-"""Minimal MAVLink Pixhawk emulator for companion-computer bench tests."""
-
 from __future__ import annotations
 
 import argparse

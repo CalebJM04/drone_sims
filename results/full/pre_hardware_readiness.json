@@ -12,16 +12,24 @@
     "telemetry_dropout": 1.0,
     "vertical_clear": 1.0
   },
-  "evidence_source_sha256": "171e4e6c21e8df2ea7ea86ac66c2ac499cba7363e26903bf4b7620d35f643643",
+  "evidence_source_sha256": "17b9240c83ae2ba7149b092c190ea27d6afc8ac4cef00b3024c8fc4ac64583e6",
   "gates": {
     "campaign_safety": true,
+    "collision_awareness": true,
     "companion_service": true,
     "deterministic_scenarios": true,
     "endurance_delivery": true,
     "evidence_source_match": true,
     "fixed_point_equivalence": true,
+    "mesh_delivery": true,
+    "mesh_latency": true,
+    "mesh_node_count": true,
+    "mesh_observation_only": true,
+    "mesh_protocol_integrity": true,
+    "mesh_state_age": true,
     "network_delivery": true,
     "network_latency": true,
+    "proactive_route_handoff": true,
     "protocol_crc": true,
     "px4_actual_separation": true,
     "px4_closed_loop": true,
@@ -29,12 +37,29 @@
     "uncertainty_precision": true,
     "uncertainty_recall": true
   },
+  "mesh_demo": {
+    "collision_awareness_alerts": 1,
+    "control_commands": 0,
+    "corrupt_frames_rejected": 0,
+    "delivery_ratio": 0.9644444444444444,
+    "duration_s": 15.0,
+    "half_duplex_losses": 253,
+    "maximum_hops": 3,
+    "maximum_state_age_s": 2.182358316655346,
+    "nodes": 6,
+    "originated_packets": 90,
+    "p95_latency_ms": 520.4093224915578,
+    "preemptive_route_handoffs": 1,
+    "transmission_attempts": 1596,
+    "undetected_corruptions": 0,
+    "unique_node_deliveries": 434
+  },
   "metadata": {
     "command": "drone-sims verify",
-    "generated_at_utc": "2026-09-10T18:29:35.029434+00:00",
+    "generated_at_utc": "2026-09-15T17:47:12.446677+00:00",
     "git": {
       "dirty": true,
-      "revision": "52d93255e63643e3dc7c05e24058a6ccad494db9"
+      "revision": "b87f5da25d392fdfd2bac0c431c8e26e241f4bc3"
     },
     "parameters": {
       "campaign_seeds": 100,
@@ -152,9 +177,9 @@
       99,
       100
     ],
-    "source_sha256": "171e4e6c21e8df2ea7ea86ac66c2ac499cba7363e26903bf4b7620d35f643643"
+    "source_sha256": "17b9240c83ae2ba7149b092c190ea27d6afc8ac4cef00b3024c8fc4ac64583e6"
   },
-  "passed": 14,
+  "passed": 22,
   "recommended_network": {
     "delivery_ratio_mean": 0.7779999999999999,
     "half_duplex_losses_mean": 100.6,
@@ -177,7 +202,7 @@
     "Propulsion, battery, vibration, mass, weather and flight-test validation"
   ],
   "status": "PASS",
-  "total": 14,
+  "total": 22,
   "tracking": {
     "cases": 25000,
     "filtered_uncertainty_aware": {

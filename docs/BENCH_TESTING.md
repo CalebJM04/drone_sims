@@ -4,6 +4,12 @@ The bench setup treats the Pi plus Heltec V2 as aircraft 1 and this computer
 plus Heltec V3 as aircraft 2. Both boards run the binary bridge firmware at
 915 MHz, SF7, 250 kHz, coding rate 4/5, and 5 dBm.
 
+The metadata-aware bridge introduced for proactive routing is not wire-compatible
+with the earlier raw-36-byte bridge used for the recorded September 9–10 evidence.
+Reflash both boards with `make firmware` before the next bench run. The telemetry
+payload itself remains protocol v2; only the bridge/over-air wrapper changed to
+carry immediate-sender ID, RSSI, and SNR.
+
 ## Quick radio demo
 
 Run these simultaneously. The `--quiet` option prints only the final counts.

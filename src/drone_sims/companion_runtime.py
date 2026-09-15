@@ -53,6 +53,7 @@ def build_service(config_path: str | Path, *, enable_control: bool = False) -> C
     frame = _section(document, "frame")
     px4 = _section(document, "px4")
     radio_config = _section(document, "radio")
+    routing = _section(document, "routing")
     safety = _section(document, "safety")
     boot_id = int(node.get("boot_id", 0)) or random.SystemRandom().randrange(1, 0x10000)
     config = CompanionConfig(
@@ -88,6 +89,20 @@ def build_service(config_path: str | Path, *, enable_control: bool = False) -> C
         control_enabled=enable_control or _boolean(
             safety.get("control_enabled", False), "safety.control_enabled"
         ),
+        collision_awareness_enabled=_boolean(
+            safety.get("collision_awareness_enabled", True),
+            "safety.collision_awareness_enabled",
+        ),
+        routing_mode=str(routing.get("mode", "proactive")),
+        relay_nodes=tuple(int(value) for value in routing.get("relay_nodes", [])),
+        forwarding_probability=float(routing.get("forwarding_probability", 0.65)),
+        nominal_radio_range_m=float(routing.get("nominal_radio_range_m", 30.0)),
+        route_lookahead_s=float(routing.get("lookahead_s", 4.0)),
+        route_margin=float(routing.get("route_margin", 0.90)),
+        link_warning_margin_m=float(routing.get("link_warning_margin_m", 5.0)),
+        routing_discovery_interval_packets=int(
+            routing.get("discovery_interval_packets", 5)
+        ),
     )
     reference_latitude = _coordinate(
         frame["reference_latitude_deg"], "reference_latitude_deg", -90.0, 90.0
@@ -114,6 +129,7 @@ def build_service(config_path: str | Path, *, enable_control: bool = False) -> C
             radio = SerialFrameRadio(
                 str(radio_config.get("device", "/dev/ttyUSB0")),
                 int(radio_config.get("baud", 115_200)),
+                node_id=config.node_id,
             )
         elif transport == "udp":
             radio = UdpRadio(
@@ -139,8 +155,6 @@ def run_service(config_path: str | Path, *, enable_control: bool = False) -> int
 
     signal.signal(signal.SIGTERM, stop)
     signal.signal(signal.SIGINT, stop)
-    # A configured epoch supports multi-day campaigns. Zero selects UTC midnight
-    # for convenient single-day tests. Every aircraft must use the same value.
     epoch = service.config.mission_epoch_unix_s
     if epoch == 0.0:
         epoch = (int(time.time()) // 86_400) * 86_400

@@ -47,3 +47,13 @@ d702010105001234abcdbeef000030390000007bfffffe3800000315ff9c00c8fed4bce9
 
 This byte string is asserted in the unit suite and is the software/radio
 integration contract.
+
+## Radio bridge metadata envelope
+
+The application frame above remains frozen and unchanged. The current Heltec
+bridge adds a transport-only envelope so the host can identify the immediate RF
+transmitter and receive RSSI/SNR. The over-air bridge record is 38 bytes: a
+two-byte immediate-transmitter ID followed by this 36-byte frame. This outer
+record is not part of protocol v2 and may be replaced without changing packet
+identity or telemetry decoding. Exact serial layouts are documented in
+`docs/NETWORK_DEMO.md` and implemented by `SerialFrameRadio`.

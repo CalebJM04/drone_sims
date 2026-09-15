@@ -22,8 +22,6 @@ class TrackedState:
 
 
 class AlphaBetaTracker:
-    """Small deterministic tracker suitable for the embedded software reference."""
-
     def __init__(self, alpha: float = 0.65, beta: float = 0.12) -> None:
         if not 0 < alpha <= 1 or not 0 <= beta <= 1:
             raise ValueError("alpha and beta must be within [0, 1], with alpha nonzero")

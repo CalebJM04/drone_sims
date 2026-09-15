@@ -1,18 +1,43 @@
-# Drone collision avoidance simulation
+# Resilient drone awareness mesh
 
-This is a college project that tests a possible collision avoidance system for
-drones. Each drone uses a Raspberry Pi companion computer to share PX4 position
-and velocity over LoRa, check whether aircraft are getting too close, and send a
-bounded avoidance velocity to PX4 when needed.
+This college project demonstrates a resilient network for four or more simulated
+or props-off drones. Each node shares position and velocity over a multi-hop LoRa
+mesh, predicts weakening links, selects relay paths before a direct link breaks,
+and reports collision risk. Flight control is optional and disabled in the main
+network demonstration.
 
-The project is still a simulation. It uses PX4 software-in-the-loop for the flight
-controller tests, but it has not been tested on a real drone yet.
+The project combines simulation with stationary RF validation. It uses PX4
+software-in-the-loop and has passed a two-radio LoRa bench test, but it has not
+flown on a real drone or exercised four physical radio nodes yet.
+
+## Main network demo
+
+The primary acceptance run starts six actual companion-service instances, feeds
+each one a moving fake-flight-controller trajectory, and connects them through the
+LoRa RF model. It verifies 4+ node delivery, latency, freshness, proactive route
+handoff, collision alerts, protocol integrity, and observation-only operation.
+
+```bash
+make mesh-acceptance
+```
+
+For a wall-clock presentation with a live topology dashboard:
+
+```bash
+make mesh-demo
+# open http://127.0.0.1:8080 while it runs
+```
+
+The saved report and replay are `results/mesh/demo.json` and
+`results/mesh/dashboard.html`. See [docs/NETWORK_DEMO.md](docs/NETWORK_DEMO.md).
 
 ## What it tests
 
 - head-on, crossing, and multiple-drone situations
 - dropped or damaged radio packets
 - network congestion and multi-hop messages
+- proactive topology prediction and pre-break relay handoff
+- per-link PDR, RSSI/SNR, range margin, and last-heard age
 - noisy GPS data, clock errors, restarts, and missing telemetry
 - collision prediction and avoidance commands
 - MAVLink messages and PX4 responses
@@ -34,6 +59,7 @@ python3 -m venv .venv
 make test
 make firmware
 make network-matrix
+make mesh-acceptance
 make px4-sitl
 make px4-closed-loop
 make verify
@@ -49,14 +75,15 @@ There is also an optional dashboard. Run `make visualize`, then open
 
 ## Current result
 
-The regenerated baseline passes 14/14 readiness checks. It includes 1,500
+The regenerated baseline passes 22/22 readiness checks, including eight dedicated
+4+ node mesh gates. It includes 1,500
 scenario runs, 25,000 damaged-packet tests, companion-service tests, endurance
 testing, and two PX4 tests. The closest required simulated scenario stayed 4.36
 meters apart; the PX4 closed-loop test stayed 8.31 meters apart. The required
 simulated minimum was 4 meters.
 
-The best network setup in the current tests was SF7/BW250 LoRa with CSMA,
-flooding, and one position update per second.
+The dedicated six-node acceptance scenario uses SF7/BW250 LoRa, CSMA, proactive
+routing, periodic discovery floods, and one position update per second.
 
 ## What is not done
 
@@ -92,8 +119,10 @@ M10 GNSS is specified at 2 m CEP, so the simulation's 3 m design distance is not
 an acceptable initial field-test envelope. Use validated RTK-fixed positioning
 before attempting the close-envelope tests described by the simulation.
 
-The serial LoRa adapter expects a transparent UART modem carrying back-to-back
-36-byte protocol frames. Set `radio.transport = "udp"` for bench/SITL tests.
+The serial LoRa adapter uses a binary bridge envelope around the frozen 36-byte
+telemetry frame. It carries the immediate transmitter ID, RSSI, and SNR to the
+companion for link awareness. Existing Heltec bridges must be reflashed after
+upgrading. Set `radio.transport = "udp"` for bench/SITL tests.
 Raspberry Pi system clocks must be synchronized. For a single-day test, a zero
 `mission_epoch_unix_s` uses UTC midnight. For multi-day campaigns, configure the
 same explicit Unix epoch on every aircraft; the 32-bit millisecond field permits

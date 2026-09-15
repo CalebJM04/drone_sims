@@ -4,25 +4,25 @@ The package separates interfaces that should remain stable when simulated
 components are replaced by hardware:
 
 ```text
-PX4 global state ─► common NED frame ─► TelemetryFrame v2 ─► LoRa radio
+PX4/fake state ─► common NED frame ─► TelemetryFrame v2 ─► LoRa radio
                                                               │
                                                               ▼
-                                                       parser/table
+                                                parser/link-quality table
                                                               │
                                                               ▼
-                                                      alpha-beta track
+                                                topology look-ahead/routes
                                                               │
                                                               ▼
-                                                   uncertainty assessment
-                                                              │
-                                                              ▼
-                                                    multi-threat planner
-                                                              │
-                                                              ▼
-                                                   MAVLink velocity stream
-                                                              │
-                                                              ▼
-                                             PX4 control, estimation, failsafes
+                                                alpha-beta/risk assessment
+                                                   │                  │
+                                                   ▼                  ▼
+                                           dashboard/alerts     optional planner
+                                                                      │
+                                                                      ▼
+                                                          MAVLink velocity stream
+                                                                      │
+                                                                      ▼
+                                                       PX4 control and failsafes
 ```
 
 `collision.py` is the floating-point reference. `fixedpoint.py` is an independent
@@ -47,6 +47,17 @@ scheduling and expiry so wall-clock adjustments cannot stall the service.
 Packet timestamps come from a synchronized shared epoch: UTC midnight for
 single-day tests, or the explicitly configured `mission_epoch_unix_s` for longer
 campaigns. The protocol can represent about 49.7 days after that epoch.
+
+`network_awareness.py` predicts link margin and time-to-loss from shared motion,
+builds present and future connectivity graphs, and selects deterministic paths.
+`routing.py` is shared by the simulator and companion service. Proactive mode
+uses a conservative future graph plus periodic discovery floods, so a relay path
+can be active before the old direct edge disappears.
+
+`mesh_demo.py` runs four to eight real companion-service cores over a simulated
+LoRa hub. `mesh_visualization.py` provides both a localhost live dashboard and a
+self-contained replay. This is the primary network demonstration; it never
+enables flight control.
 
 The companion computer does not arm the aircraft or change flight mode. PX4
 remains the authority for stabilization, estimation, geofencing, and failsafes.

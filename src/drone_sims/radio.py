@@ -141,7 +141,7 @@ class RadioMedium:
         off_time = self.config.airtime(len(data)) * (1.0 / self.config.duty_cycle - 1.0)
         self._next_tx_allowed[sender] = end + off_time
         self._tx_windows.setdefault(sender, []).append((start, end))
-        # A LoRa transceiver cannot receive while its own transmitter is on.
+        # A node cannot receive while it is transmitting.
         for prior in self._active.get(sender, []):
             if prior.started_at < end and start < prior.ends_at and not prior.lost:
                 prior.lost = True

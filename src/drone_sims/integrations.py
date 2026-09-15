@@ -46,13 +46,6 @@ def readiness() -> dict[str, Any]:
 
 
 class JsonUdpFlightController:
-    """Dependency-free UDP test double for a future MAVLink/SITL bridge.
-
-    Messages are newline-free JSON datagrams. This exercises transport timing,
-    timeout, acknowledgement, and command-state handling without claiming MAVLink
-    compatibility. The real adapter can implement the same send/receive boundary.
-    """
-
     def __init__(self, host: str, port: int, timeout: float = 0.5) -> None:
         self.address = (host, port)
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

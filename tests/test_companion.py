@@ -6,7 +6,14 @@ from types import SimpleNamespace
 
 from drone_sims.collision import KinematicState, Vec3
 from drone_sims.companion import CompanionConfig, CompanionService, global_to_local_ned
-from drone_sims.companion_io import MavlinkPx4, SerialFrameRadio
+from drone_sims.companion_io import (
+    BRIDGE_RX_MAGIC,
+    MavlinkPx4,
+    SerialFrameRadio,
+    decode_bridge_reception,
+    encode_bridge_transmit,
+)
+from drone_sims.radio_types import RadioReception
 from drone_sims.companion_runtime import _boolean, _coordinate, _pair
 from drone_sims.protocol import FRAME_SIZE, ProtocolError, TelemetryFrame, decode, encode
 
@@ -57,6 +64,10 @@ class FakeSerial:
         result = bytes(self.payload[:length])
         del self.payload[:length]
         return result
+
+    def write(self, payload: bytes) -> int:
+        self.written = payload
+        return len(payload)
 
 
 class FakeMavlinkConnection:
@@ -209,6 +220,28 @@ class CompanionServiceTests(unittest.TestCase):
         self.assertEqual(service.stats.crc_rejections, 1)
         self.assertFalse(service.table.entries)
 
+    def test_companion_exposes_link_topology_and_collision_alerts(self) -> None:
+        px4 = FakePx4([state(1, 0.0, 1.0)])
+        radio = FakeRadio()
+        service = CompanionService(
+            CompanionConfig(1, 10, routing_mode="proactive", nominal_radio_range_m=30),
+            px4,
+            radio,
+        )
+        payload = encode(
+            TelemetryFrame.from_state(state(2, 8.0, -1.0), sequence=1, boot_id=20)
+        )
+        radio.incoming.append(
+            RadioReception(payload, sender_id=2, rssi_dbm=-88.5, snr_db=7.0)
+        )
+        service.step(0.0, 0.0)
+        snapshot = service.snapshot()
+        self.assertEqual(snapshot["routing_mode"], "proactive")
+        self.assertEqual(snapshot["link_quality"][0]["rssi_dbm"], -88.5)
+        self.assertTrue(snapshot["topology"]["links"])
+        self.assertTrue(snapshot["collision_alerts"][0]["risk"])
+        self.assertEqual(service.stats.commands_sent, 0)
+
     def test_serial_radio_resynchronizes_after_corrupt_frame(self) -> None:
         valid = encode(
             TelemetryFrame.from_state(state(2, 10.0, 0.0), sequence=3, boot_id=20)
@@ -218,6 +251,7 @@ class CompanionServiceTests(unittest.TestCase):
         radio = object.__new__(SerialFrameRadio)
         radio.serial = FakeSerial(b"garbage" + bytes(corrupt) + valid)
         radio._buffer = bytearray()
+        radio.node_id = 1
         packets = radio.receive()
         decoded = []
         for packet in packets:
@@ -226,6 +260,28 @@ class CompanionServiceTests(unittest.TestCase):
             except ProtocolError:
                 pass
         self.assertEqual([frame.packet_id for frame in decoded], [(2, 20, 3)])
+
+    def test_metadata_bridge_envelope_round_trip(self) -> None:
+        payload = encode(
+            TelemetryFrame.from_state(state(2, 10.0, 0.0), sequence=3, boot_id=20)
+        )
+        outbound = encode_bridge_transmit(7, payload)
+        self.assertEqual(outbound[:4], bytes((0xA5, 1, 0, 7)))
+        inbound = bytes((BRIDGE_RX_MAGIC, 1, 0, 7, 0xFC, 0x72, 0, 35)) + payload
+        reception = decode_bridge_reception(inbound)
+        self.assertEqual(reception.sender_id, 7)
+        self.assertEqual(reception.rssi_dbm, -91.0)
+        self.assertEqual(reception.snr_db, 3.5)
+        self.assertEqual(reception.payload, payload)
+
+        radio = object.__new__(SerialFrameRadio)
+        radio.serial = FakeSerial(b"noise" + inbound)
+        radio._buffer = bytearray()
+        radio.node_id = 9
+        received = radio.receive()
+        self.assertEqual(received, [reception])
+        radio.send(payload)
+        self.assertEqual(radio.serial.written, encode_bridge_transmit(9, payload))
 
     def test_px4_adapter_requires_healthy_minimum_gps_fix(self) -> None:
         def message(message_type: str, **values):

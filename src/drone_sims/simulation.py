@@ -264,7 +264,11 @@ class Simulation:
                 latency=round(latency, 6),
             )
             if frame.ttl > 0 and self.config.routing.should_forward(
-                receiver.node_id, frame.source, frame.sequence
+                receiver.node_id,
+                frame.source,
+                frame.sequence,
+                states={node_id: node.state(reception.ends_at) for node_id, node in self.nodes.items()},
+                now=reception.ends_at,
             ):
                 forwarded = frame.forwarded()
                 self.medium.broadcast(receiver.node_id, encode(forwarded), reception.path, reception.ends_at)

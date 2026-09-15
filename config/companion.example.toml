@@ -1,50 +1,46 @@
-# Copy this file once per aircraft and give every aircraft a unique node ID.
 [node]
+# Give each drone a different ID.
 id = 1
-# Leave at zero to generate a new non-zero boot/session ID on every start.
 boot_id = 0
 
-# All aircraft MUST use the same surveyed reference point. PX4 global position is
-# converted into this shared local-NED coordinate frame before LoRa transmission.
 [frame]
+# These coordinates must match on every drone.
 reference_latitude_deg = 35.9606
 reference_longitude_deg = -83.9207
 reference_altitude_m = 300.0
-# Set the same Unix epoch on every aircraft for multi-day campaigns. Zero uses
-# the current UTC midnight and is suitable only for a mission that stays in-day.
 mission_epoch_unix_s = 0
 
 [px4]
-# PX4 TELEM2 is normally exposed as /dev/serial0 on Raspberry Pi GPIO UART.
 connection = "/dev/serial0"
 baud = 57600
 heartbeat_timeout_s = 10.0
-# 3 = 3D fix. Require 6 (RTK fixed) for validated close-envelope RTK tests.
 minimum_gps_fix_type = 3
 
 [radio]
-# "serial" is for a transparent UART LoRa modem. Use "udp" for bench/SITL.
 transport = "serial"
 device = "/dev/ttyUSB0"
 baud = 115200
-# bind = "0.0.0.0:14600"
-# peer = "127.0.0.1:14601"
+[routing]
+mode = "proactive"
+relay_nodes = []
+forwarding_probability = 0.65
+nominal_radio_range_m = 30.0
+lookahead_s = 4.0
+route_margin = 0.90
+link_warning_margin_m = 5.0
+discovery_interval_packets = 5
 
 [safety]
-# Keep false until props-off and HIL tests pass. --enable-control overrides this.
+# Leave this off until the hardware tests pass.
 control_enabled = false
+collision_awareness_enabled = true
 telemetry_interval_s = 1.0
 risk_interval_s = 0.1
 command_interval_s = 0.1
 own_state_timeout_s = 0.5
 neighbor_expiry_s = 6.0
-# Conservative field default for the included M10. The simulation's 3 m design
-# target is not a safe hardware-test envelope with a 2 m CEP GNSS receiver.
 safety_distance_m = 10.0
 horizon_s = 5.0
-# The included M10 GPS is specified at 2 m CEP; do not reduce this uncertainty
-# until repeated field measurements justify it. RTK-fixed installations may use
-# a smaller measured value after validation.
 own_position_sigma_m = 2.0
 own_velocity_sigma_mps = 0.15
 measurement_position_sigma_m = 2.0

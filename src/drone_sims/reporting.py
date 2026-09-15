@@ -63,6 +63,7 @@ def final_results_text(
     endurance = verification["endurance_campaign"]
     tracking = verification["tracking"]["filtered_uncertainty_aware"]
     recommendation = network["recommendation"]
+    mesh = verification.get("mesh_demo")
 
     required = (
         "head_on", "noisy", "limited_dynamics", "crossing", "vertical_clear",
@@ -103,6 +104,24 @@ def final_results_text(
         f"Average packet delivery: {recommendation['delivery_ratio_mean'] * 100:.1f}%",
         f"Average delay: {recommendation['latency_ms_mean']:.0f} ms",
         "",
+        *(
+            [
+                "Primary 4+ node mesh demo",
+                (
+                    f"{mesh['summary']['nodes']} nodes, "
+                    f"{mesh['summary']['delivery_ratio'] * 100:.1f}% delivery, "
+                    f"{mesh['summary']['p95_latency_ms']:.0f} ms p95, "
+                    f"{mesh['summary']['maximum_state_age_s']:.2f} s maximum state age"
+                ),
+                (
+                    f"Handoffs: {mesh['summary']['preemptive_route_handoffs']}; "
+                    f"collision alerts: {mesh['summary']['collision_awareness_alerts']}; "
+                    f"control commands: {mesh['summary']['control_commands']}"
+                ),
+                "",
+            ]
+            if mesh else []
+        ),
         f"PX4 basic test: {px4['passed']}/{px4['total']} passed",
         f"PX4 collision test: {closed_loop['passed']}/{closed_loop['total']} passed",
         f"PX4 minimum separation: {closed_loop['actual_minimum_separation_m']:.2f} m",

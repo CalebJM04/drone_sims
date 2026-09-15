@@ -38,6 +38,8 @@ def main() -> int:
     recommendation = network["recommendation"]
     tracking = verification["tracking"]["filtered_uncertainty_aware"]
     endurance = verification["endurance_300s"]
+    mesh = verification["mesh_demo"]
+    evidence = (*evidence, mesh)
     gates = {
         "protocol_crc": verification["protocol"]["detection_rate"] >= requirements["protocol_crc_detection_rate_min"],
         "fixed_point_equivalence": verification["fixed_point"]["mismatch_rate"] <= requirements["fixed_point_mismatch_rate_max"],
@@ -62,6 +64,14 @@ def main() -> int:
             and item["metadata"].get("source_sha256") == current_source_digest
             for item in evidence
         ),
+        "mesh_node_count": mesh["checks"]["minimum_nodes"],
+        "mesh_delivery": mesh["checks"]["delivery_ratio"],
+        "mesh_latency": mesh["checks"]["p95_latency"],
+        "mesh_state_age": mesh["checks"]["state_age"],
+        "proactive_route_handoff": mesh["checks"]["preemptive_route"],
+        "collision_awareness": mesh["checks"]["collision_awareness"],
+        "mesh_observation_only": mesh["checks"]["observation_only"],
+        "mesh_protocol_integrity": mesh["checks"]["protocol_integrity"],
     }
     passed = sum(gates.values())
     report = {
@@ -71,6 +81,7 @@ def main() -> int:
         "gates": gates,
         "recommended_network": recommendation,
         "tracking": verification["tracking"],
+        "mesh_demo": mesh["summary"],
         "metadata": verification.get("metadata"),
         "evidence_source_sha256": current_source_digest,
         "campaign_safety": {name: campaign[name]["safety_distance_success_rate"] for name in SAFE_SCENARIOS},

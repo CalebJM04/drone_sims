@@ -9,13 +9,16 @@
 | LoRa PHY | Exact SF/BW/CR/header/CRC/LDRO airtime, duty-cycle queue | Selected module measurements |
 | Radio/channel | Path loss, sensitivity, capture, half duplex, CSMA/ALOHA | Range, interference and antenna tests |
 | Routing | Flood, relay, probabilistic, TTL, duplicates, 3-hop failover | Mobile field topology |
+| Proactive routing | Future topology graph, trusted-range margin, discovery floods, pre-break handoff | Four-radio moving/range topology |
+| Link awareness | Range margin, time-to-loss, PDR and metadata ingestion | Calibrated RSSI/SNR versus distance |
 | Estimation | Alpha-beta tracking and uncertainty confusion matrix | Receiver-specific noise calibration |
 | Avoidance | Seven candidates, multi-threat worst-case scoring, geofence | Safety review and real flight envelope |
 | Fault handling | GPS jump, clock skew, restart, blackout, command failure | HIL fault injection |
 | Flight response | Dynamics bounds and real PX4 SIH closed loop | Airframe dynamics and failsafes |
 | Companion computer | Common-frame conversion, packet ingest/relay, stale-state command suppression | Pi power, thermals, UART, watchdog and HIL |
 | Endurance | 300 simulated seconds, 12 nodes, relay routing | Thermal/power/soak testing |
-| Acceptance | Frozen JSON thresholds, source-matched evidence, 4 m operational margin and 14-gate readiness report | Hardware gate extension |
+| Primary mesh demo | Six production companion cores, 1 Hz, delivery/latency/freshness gates, live dashboard | Four physical RF endpoints |
+| Acceptance | Frozen JSON thresholds, source-matched evidence, 4 m operational margin and 22-gate readiness report | Hardware gate extension |
 
 ## Scenario catalog
 

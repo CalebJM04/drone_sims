@@ -40,9 +40,7 @@ def _git_value(*arguments: str) -> str | None:
 
 
 def source_digest() -> str:
-    """Hash every input that can affect generated verification evidence."""
-
-    roots = ("src", "tools", "requirements", "config", "deploy")
+    roots = ("src", "tools", "requirements", "config", "deploy", "firmware")
     files: list[Path] = [PROJECT_ROOT / "pyproject.toml", PROJECT_ROOT / "Makefile"]
     for root in roots:
         files.extend(

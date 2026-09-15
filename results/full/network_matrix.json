@@ -2,13 +2,13 @@
   "frame_size_bytes": 36,
   "metadata": {
     "command": "drone-sims network-matrix",
-    "generated_at_utc": "2026-09-10T18:27:45.442975+00:00",
+    "generated_at_utc": "2026-09-15T17:45:20.351353+00:00",
     "git": {
       "dirty": true,
-      "revision": "52d93255e63643e3dc7c05e24058a6ccad494db9"
+      "revision": "b87f5da25d392fdfd2bac0c431c8e26e241f4bc3"
     },
     "parameters": {
-      "rows": 36,
+      "rows": 48,
       "seeds": 5
     },
     "px4_image": null,
@@ -25,7 +25,7 @@
       4,
       5
     ],
-    "source_sha256": "171e4e6c21e8df2ea7ea86ac66c2ac499cba7363e26903bf4b7620d35f643643"
+    "source_sha256": "17b9240c83ae2ba7149b092c190ea27d6afc8ac4cef00b3024c8fc4ac64583e6"
   },
   "minimum_separation_requirement_m": 4.0,
   "profiles": {
@@ -157,6 +157,34 @@
       "transmission_attempts_mean": 331.8
     },
     {
+      "delivery_ratio_mean": 0.5316666666666666,
+      "half_duplex_losses_mean": 82.8,
+      "latency_ms_mean": 436.9226093035562,
+      "mac": "csma",
+      "minimum_separation_worst_m": 8.120812767205122,
+      "phy": "fast",
+      "routing": "proactive",
+      "seeds": 5,
+      "single_channel_capacity_pps": 25.95514950166113,
+      "telemetry_interval_s": 0.5,
+      "time_on_air_ms": 38.528,
+      "transmission_attempts_mean": 487.2
+    },
+    {
+      "delivery_ratio_mean": 0.5726666666666667,
+      "half_duplex_losses_mean": 25.8,
+      "latency_ms_mean": 325.8086730231536,
+      "mac": "csma",
+      "minimum_separation_worst_m": 8.120812767205122,
+      "phy": "fast",
+      "routing": "proactive",
+      "seeds": 5,
+      "single_channel_capacity_pps": 25.95514950166113,
+      "telemetry_interval_s": 1.0,
+      "time_on_air_ms": 38.528,
+      "transmission_attempts_mean": 246.8
+    },
+    {
       "delivery_ratio_mean": 0.42300000000000004,
       "half_duplex_losses_mean": 231.0,
       "latency_ms_mean": 372.105092418819,
@@ -239,6 +267,34 @@
       "telemetry_interval_s": 1.0,
       "time_on_air_ms": 38.528,
       "transmission_attempts_mean": 302.2
+    },
+    {
+      "delivery_ratio_mean": 0.35933333333333334,
+      "half_duplex_losses_mean": 108.6,
+      "latency_ms_mean": 272.9300369146311,
+      "mac": "aloha",
+      "minimum_separation_worst_m": 8.120812767205122,
+      "phy": "fast",
+      "routing": "proactive",
+      "seeds": 5,
+      "single_channel_capacity_pps": 25.95514950166113,
+      "telemetry_interval_s": 0.5,
+      "time_on_air_ms": 38.528,
+      "transmission_attempts_mean": 427.8
+    },
+    {
+      "delivery_ratio_mean": 0.506,
+      "half_duplex_losses_mean": 34.8,
+      "latency_ms_mean": 283.00013526730385,
+      "mac": "aloha",
+      "minimum_separation_worst_m": 8.120812767205122,
+      "phy": "fast",
+      "routing": "proactive",
+      "seeds": 5,
+      "single_channel_capacity_pps": 25.95514950166113,
+      "telemetry_interval_s": 1.0,
+      "time_on_air_ms": 38.528,
+      "transmission_attempts_mean": 234.2
     },
     {
       "delivery_ratio_mean": 0.22599999999999998,
@@ -325,6 +381,34 @@
       "transmission_attempts_mean": 249.2
     },
     {
+      "delivery_ratio_mean": 0.254,
+      "half_duplex_losses_mean": 180.6,
+      "latency_ms_mean": 2628.2981224843097,
+      "mac": "csma",
+      "minimum_separation_worst_m": 8.120812767205122,
+      "phy": "balanced",
+      "routing": "proactive",
+      "seeds": 5,
+      "single_channel_capacity_pps": 3.74161877394636,
+      "telemetry_interval_s": 0.5,
+      "time_on_air_ms": 267.264,
+      "transmission_attempts_mean": 396.4
+    },
+    {
+      "delivery_ratio_mean": 0.366,
+      "half_duplex_losses_mean": 78.2,
+      "latency_ms_mean": 1772.6637140785904,
+      "mac": "csma",
+      "minimum_separation_worst_m": 8.120812767205122,
+      "phy": "balanced",
+      "routing": "proactive",
+      "seeds": 5,
+      "single_channel_capacity_pps": 3.74161877394636,
+      "telemetry_interval_s": 1.0,
+      "time_on_air_ms": 267.264,
+      "transmission_attempts_mean": 223.0
+    },
+    {
       "delivery_ratio_mean": 0.012666666666666668,
       "half_duplex_losses_mean": 288.0,
       "latency_ms_mean": 477.255152733647,
@@ -407,6 +491,34 @@
       "telemetry_interval_s": 1.0,
       "time_on_air_ms": 267.264,
       "transmission_attempts_mean": 188.4
+    },
+    {
+      "delivery_ratio_mean": 0.011666666666666667,
+      "half_duplex_losses_mean": 291.0,
+      "latency_ms_mean": 471.97015103916965,
+      "mac": "aloha",
+      "minimum_separation_worst_m": 1.213334988037218e-13,
+      "phy": "balanced",
+      "routing": "proactive",
+      "seeds": 5,
+      "single_channel_capacity_pps": 3.74161877394636,
+      "telemetry_interval_s": 0.5,
+      "time_on_air_ms": 267.264,
+      "transmission_attempts_mean": 323.2
+    },
+    {
+      "delivery_ratio_mean": 0.12,
+      "half_duplex_losses_mean": 106.8,
+      "latency_ms_mean": 480.2060232409693,
+      "mac": "aloha",
+      "minimum_separation_worst_m": 3.2616560211034935,
+      "phy": "balanced",
+      "routing": "proactive",
+      "seeds": 5,
+      "single_channel_capacity_pps": 3.74161877394636,
+      "telemetry_interval_s": 1.0,
+      "time_on_air_ms": 267.264,
+      "transmission_attempts_mean": 180.4
     },
     {
       "delivery_ratio_mean": 0.02733333333333333,
@@ -493,6 +605,34 @@
       "transmission_attempts_mean": 162.8
     },
     {
+      "delivery_ratio_mean": 0.02733333333333333,
+      "half_duplex_losses_mean": 148.8,
+      "latency_ms_mean": 6403.716026492923,
+      "mac": "csma",
+      "minimum_separation_worst_m": 3.7941533970045,
+      "phy": "long_range",
+      "routing": "proactive",
+      "seeds": 5,
+      "single_channel_capacity_pps": 0.5065158195020747,
+      "telemetry_interval_s": 0.5,
+      "time_on_air_ms": 1974.272,
+      "transmission_attempts_mean": 317.2
+    },
+    {
+      "delivery_ratio_mean": 0.048,
+      "half_duplex_losses_mean": 77.4,
+      "latency_ms_mean": 6188.5420717481975,
+      "mac": "csma",
+      "minimum_separation_worst_m": 3.7941533970045,
+      "phy": "long_range",
+      "routing": "proactive",
+      "seeds": 5,
+      "single_channel_capacity_pps": 0.5065158195020747,
+      "telemetry_interval_s": 1.0,
+      "time_on_air_ms": 1974.272,
+      "transmission_attempts_mean": 165.8
+    },
+    {
       "delivery_ratio_mean": 0.0,
       "half_duplex_losses_mean": 287.2,
       "latency_ms_mean": null,
@@ -570,6 +710,34 @@
       "minimum_separation_worst_m": 1.213334988037218e-13,
       "phy": "long_range",
       "routing": "probabilistic",
+      "seeds": 5,
+      "single_channel_capacity_pps": 0.5065158195020747,
+      "telemetry_interval_s": 1.0,
+      "time_on_air_ms": 1974.272,
+      "transmission_attempts_mean": 146.4
+    },
+    {
+      "delivery_ratio_mean": 0.0,
+      "half_duplex_losses_mean": 287.2,
+      "latency_ms_mean": null,
+      "mac": "aloha",
+      "minimum_separation_worst_m": 1.213334988037218e-13,
+      "phy": "long_range",
+      "routing": "proactive",
+      "seeds": 5,
+      "single_channel_capacity_pps": 0.5065158195020747,
+      "telemetry_interval_s": 0.5,
+      "time_on_air_ms": 1974.272,
+      "transmission_attempts_mean": 288.0
+    },
+    {
+      "delivery_ratio_mean": 0.0,
+      "half_duplex_losses_mean": 146.0,
+      "latency_ms_mean": null,
+      "mac": "aloha",
+      "minimum_separation_worst_m": 1.213334988037218e-13,
+      "phy": "long_range",
+      "routing": "proactive",
       "seeds": 5,
       "single_channel_capacity_pps": 0.5065158195020747,
       "telemetry_interval_s": 1.0,
