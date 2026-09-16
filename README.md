@@ -5,10 +5,6 @@ project. Simulated drones exchange position and velocity through a modeled LoRa
 radio network and assess collision risk. The simulator runs on a deterministic
 virtual clock with recorded random seeds.
 
-The completed implementation is preserved on the `most-updated` branch at commit
-`a63595d`. `main` deliberately leaves three substantial features for teammates.
-The removed implementations and historical results are available on that branch.
-Git history is preserved.
 
 ## Run the foundation
 
