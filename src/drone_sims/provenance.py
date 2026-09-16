@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 import hashlib
-from importlib import metadata
 import platform
 from pathlib import Path
 import subprocess
@@ -10,21 +9,6 @@ from typing import Any, Iterable
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
-PINNED_PX4_IMAGE = (
-    "px4io/px4-sitl@sha256:"
-    "01866d912ac22ca6119a996b830cf628a6d47dfb60fdccc41cd9f44b62935a44"
-)
-
-
-def _command_version(command: list[str]) -> str | None:
-    try:
-        completed = subprocess.run(
-            command, text=True, capture_output=True, check=False, timeout=5,
-        )
-    except (FileNotFoundError, subprocess.SubprocessError):
-        return None
-    output = (completed.stdout or completed.stderr).strip()
-    return output.splitlines()[0] if output else None
 
 
 def _git_value(*arguments: str) -> str | None:
@@ -40,7 +24,7 @@ def _git_value(*arguments: str) -> str | None:
 
 
 def source_digest() -> str:
-    roots = ("src", "tools", "requirements", "config", "deploy", "firmware")
+    roots = ("src",)
     files: list[Path] = [PROJECT_ROOT / "pyproject.toml", PROJECT_ROOT / "Makefile"]
     for root in roots:
         files.extend(
@@ -63,16 +47,11 @@ def collect_metadata(
     *,
     seeds: Iterable[int] = (),
     parameters: dict[str, Any] | None = None,
-    px4_image: str | None = None,
 ) -> dict[str, Any]:
     revision = _git_value("rev-parse", "HEAD")
     status = _git_value(
         "status", "--porcelain", "--", ".", ":(exclude)results/**",
     )
-    try:
-        pymavlink_version = metadata.version("pymavlink")
-    except metadata.PackageNotFoundError:
-        pymavlink_version = None
     return {
         "schema_version": 1,
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
@@ -87,7 +66,5 @@ def collect_metadata(
         "runtime": {
             "python": platform.python_version(),
             "platform": platform.platform(),
-            "pymavlink": pymavlink_version,
         },
-        "px4_image": px4_image,
     }

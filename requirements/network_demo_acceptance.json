@@ -1,9 +1,0 @@
-{
-  "minimum_nodes": 4,
-  "minimum_delivery_ratio": 0.90,
-  "maximum_p95_latency_ms": 1500.0,
-  "maximum_state_age_s": 3.0,
-  "require_preemptive_route": true,
-  "require_collision_alert": true,
-  "maximum_control_commands": 0
-}

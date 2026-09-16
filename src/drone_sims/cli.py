@@ -5,19 +5,13 @@ import json
 from pathlib import Path
 
 from .campaign import run_campaign
-from .companion_runtime import run_service
-from .integrations import readiness
-from .mesh_demo import MAX_DEMO_NODES, load_requirements, run_mesh_demo
-from .mesh_visualization import LiveMeshDashboard, build_mesh_dashboard
-from .network_matrix import run_network_matrix
 from .scenarios import CAMPAIGN_SCENARIOS, SCENARIOS, build
 from .verification import run_full_verification
-from .visualization import DEFAULT_TRACE_SCENARIOS, build_dashboard
 from .provenance import collect_metadata
 
 
 def parser() -> argparse.ArgumentParser:
-    root = argparse.ArgumentParser(description="LoRa UAV simulation and verification suite")
+    root = argparse.ArgumentParser(description="Drone mesh simulation foundation")
     commands = root.add_subparsers(dest="command", required=True)
     scenario = commands.add_parser("scenario", help="run one end-to-end scenario")
     scenario.add_argument("name", choices=SCENARIOS)
@@ -35,33 +29,6 @@ def parser() -> argparse.ArgumentParser:
     verify.add_argument("--workers", type=int, default=1)
     verify.add_argument("--endurance-seeds", type=int, default=3)
     verify.add_argument("--output", type=Path, default=Path("results/full"))
-    commands.add_parser("readiness", help="report companion-computer and SITL tooling")
-    companion = commands.add_parser("companion", help="run the Raspberry Pi/PX4 companion service")
-    companion.add_argument("--config", type=Path, required=True)
-    companion.add_argument(
-        "--enable-control", action="store_true",
-        help="stream velocity setpoints (never arms or changes PX4 flight mode)",
-    )
-    network = commands.add_parser("network-matrix", help="compare exact LoRa PHY/MAC/routing choices")
-    network.add_argument("--seeds", type=int, default=3)
-    network.add_argument("--output", type=Path, default=Path("results/full/network_matrix.json"))
-    visualize = commands.add_parser("visualize", help="build a self-contained HTML results dashboard")
-    visualize.add_argument("--results", type=Path, default=Path("results/full"))
-    visualize.add_argument("--output", type=Path, default=Path("results/full/dashboard.html"))
-    visualize.add_argument("--scenarios", nargs="+", choices=SCENARIOS, default=list(DEFAULT_TRACE_SCENARIOS))
-    visualize.add_argument("--seed", type=int, default=7)
-    mesh = commands.add_parser(
-        "mesh-demo", help="run 4-16 companion nodes over a simulated LoRa mesh"
-    )
-    mesh.add_argument("--nodes", type=int, choices=range(4, MAX_DEMO_NODES + 1), default=6)
-    mesh.add_argument("--duration", type=float, default=15.0)
-    mesh.add_argument("--seed", type=int, default=31)
-    mesh.add_argument("--backend", choices=("process", "inline"), default="process")
-    mesh.add_argument("--telemetry-interval", type=float, default=1.0)
-    mesh.add_argument("--realtime", action="store_true", help="pace virtual time to wall time")
-    mesh.add_argument("--serve", type=int, metavar="PORT", help="serve a live dashboard on localhost")
-    mesh.add_argument("--output", type=Path, default=Path("results/mesh/demo.json"))
-    mesh.add_argument("--dashboard", type=Path, default=Path("results/mesh/dashboard.html"))
     return root
 
 
@@ -102,57 +69,6 @@ def main(argv: list[str] | None = None) -> int:
         print("Verification finished.")
         print(f"Results: {args.output / 'results.txt'}")
         return 0
-    elif args.command == "companion":
-        return run_service(args.config, enable_control=args.enable_control)
-    elif args.command == "network-matrix":
-        report = run_network_matrix(args.seeds)
-        args.output.parent.mkdir(parents=True, exist_ok=True)
-        args.output.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    elif args.command == "visualize":
-        output = build_dashboard(args.results, args.output, scenarios=args.scenarios, seed=args.seed)
-        report = {"dashboard": str(output), "scenarios": args.scenarios, "seed": args.seed}
-    elif args.command == "mesh-demo":
-        live = LiveMeshDashboard(args.serve) if args.serve is not None else None
-        last_printed = -1
-
-        def update(state: dict[str, object]) -> None:
-            nonlocal last_printed
-            if live is not None:
-                live.update(state)
-            second = int(float(state["time_s"]))
-            if second != last_printed:
-                last_printed = second
-                print(json.dumps({
-                    "time_s": state["time_s"],
-                    "delivery_ratio": state["delivery_ratio"],
-                    "route_1_to_2": state["route_1_to_2"],
-                    "active_alerts": len(state["alerts"]),
-                }, sort_keys=True), flush=True)
-
-        if live is not None:
-            live.start()
-            print(f"Live dashboard: {live.address}", flush=True)
-        try:
-            report = run_mesh_demo(
-                nodes=args.nodes,
-                duration_s=args.duration,
-                seed=args.seed,
-                realtime=args.realtime,
-                backend=args.backend,
-                telemetry_interval_s=args.telemetry_interval,
-                requirements=load_requirements(),
-                update=update,
-            )
-        finally:
-            if live is not None:
-                live.close()
-        args.output.parent.mkdir(parents=True, exist_ok=True)
-        args.output.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-        dashboard = build_mesh_dashboard(report, args.dashboard)
-        print(json.dumps({"status": report["status"], "summary": report["summary"], "dashboard": str(dashboard)}, indent=2))
-        return 0 if report["status"] == "PASS" else 1
-    else:
-        report = readiness()
     print(json.dumps(report, indent=2, sort_keys=True))
     return 0
 

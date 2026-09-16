@@ -1,72 +1,37 @@
-# Architecture
+# Architecture of the team foundation
 
-The primary system is a software-only network testbed. Its interfaces also keep
-future hardware integration possible without making hardware part of the current
-demonstration:
+The current simulator runs all nodes in one process on a deterministic virtual
+clock. `simulation.py` combines motion, modeled radio delivery, neighbor-state
+maintenance, collision assessments, and simulated avoidance. Random behavior
+comes from a recorded seed; `campaign.py` repeats scenarios across seeds.
+
+`protocol.py` defines network byte order and units. Forwarding changes TTL and
+hop count; `(source, boot_id, sequence)` identifies a packet. `state_table.py`
+handles neighbor sequence ordering, restarts, and freshness. `radio.py` and
+`lora_phy.py` provide the modeled radio medium, airtime, loss, and congestion.
+
+`collision.py` is the floating-point reference. `fixedpoint.py` is the independent
+integer cross-check. `tracking.py`, `planner.py`, and `avoidance.py` support
+uncertainty-aware assessments and simulated responses.
+
+`companion.py` retains the hardware-independent single-node service with injected
+flight-state and radio ports. It broadcasts/forwards telemetry, tracks peers, and
+provides collision alerts and counters through `snapshot()`. Basic routing modes
+are flooding, fixed relay, and probabilistic forwarding. Flight control defaults
+to disabled. Hardware adapters are preserved on `most-updated`.
+
+The team's target architecture extends this foundation:
 
 ```text
-simulated state ─► companion process ─► TelemetryFrame v2 ─► virtual LoRa hub
-                                                              │
-                                                              ▼
-                                                parser/link-quality table
-                                                              │
-                                                              ▼
-                                                topology look-ahead/routes
-                                                              │
-                                                              ▼
-                                                alpha-beta/risk assessment
-                                                   │                  │
-                                                   ▼                  ▼
-                                           dashboard/alerts     optional planner
-                                                                      │
-                                                                      ▼
-                                                          MAVLink velocity stream
-                                                                      │
-                                                                      ▼
-                                                       PX4 control and failsafes
+simulated trajectories -> independent node services -> parent-owned LoRa model
+                                   |
+                        link prediction / proactive routes
+                                   |
+                          snapshots and measured events
+                                   |
+                    live dashboard / replay / acceptance report
 ```
 
-`collision.py` is the floating-point reference. `fixedpoint.py` is an independent
-integer cross-check used to detect numeric regressions in the embedded
-calculation.
-
-`protocol.py` owns the frozen network byte order and units. Forwarding changes
-only TTL and hop count; `(source, boot_id, sequence)` is the packet identity.
-
-`simulation.py` combines motion, radio deliveries, state maintenance, risk checks,
-and command execution on a deterministic virtual clock. All stochastic behavior
-comes from a recorded seed.
-
-`campaign.py` repeats complete scenarios across seeds and summarizes distributions
-rather than presenting one favorable run.
-
-`companion.py` is the hardware-independent node service. In the primary demo,
-each node runs that service in its own operating-system process. The parent
-process owns the deterministic virtual LoRa hub and exchanges frames and
-snapshots with the node processes over local pipes. This separates node state and
-failure boundaries while keeping the radio simulation repeatable.
-
-`companion_io.py` contains optional PX4, serial-radio, UDP, and systemd adapters
-retained for future work. They are not required by the software demonstration.
-
-`network_awareness.py` predicts link margin and time-to-loss from shared motion,
-builds present and future connectivity graphs, and selects deterministic paths.
-`routing.py` is shared by the simulator and companion service. Proactive mode
-uses a conservative future graph plus periodic discovery floods, so a relay path
-can be active before the old direct edge disappears.
-
-`mesh_demo.py` runs four to sixteen companion-service nodes over the simulated
-LoRa hub. Six nodes are the validated acceptance configuration. The CLI defaults
-to one process per node; an inline backend remains available for fast regression
-runs. `mesh_visualization.py` provides both a localhost live dashboard and a
-self-contained replay. The demo never arms an aircraft or enables flight
-control.
-
-The software-only acceptance path sends no flight-control commands. Optional PX4
-integration tests exercise a simulated vehicle and keep PX4 as the authority for
-stabilization, estimation, geofencing, and failsafes.
-
-When event logging is enabled, `simulation.py` records position, velocity,
-controller state, and separation over time. The main output is the plain-text
-`results/full/results.txt` file. An optional replay page can still be made with
-`make visualize`.
+`network_awareness.py`, `mesh_demo.py`, and `mesh_visualization.py` contain small
+contracts for these unfinished features. See the three task writeups for ownership
+and integration details. Core verification does not invoke those contracts.

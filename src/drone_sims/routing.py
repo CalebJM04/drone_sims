@@ -3,7 +3,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from .collision import KinematicState
-from .network_awareness import proactive_forwarders
 
 
 @dataclass(frozen=True, slots=True)
@@ -12,10 +11,6 @@ class RoutingPolicy:
     relay_nodes: tuple[int, ...] = ()
     forwarding_probability: float = 0.65
     seed: int = 1
-    proactive_range_m: float = 30.0
-    proactive_lookahead_s: float = 4.0
-    proactive_route_margin: float = 0.90
-    discovery_interval_packets: int = 5
 
     def should_forward(
         self,
@@ -42,23 +37,7 @@ class RoutingPolicy:
             value ^= value >> 16
             return value / 0xFFFFFFFF < self.forwarding_probability
         if self.mode == "proactive":
-            # Send an occasional flood so nodes can find new routes.
-            if (
-                states is None
-                or source not in states
-                or len(states) < 3
-                or self.discovery_interval_packets <= 1
-                or sequence % self.discovery_interval_packets == 0
-            ):
-                return True
-            return node_id in proactive_forwarders(
-                states,
-                source=source,
-                now=now,
-                range_m=self.proactive_range_m,
-                lookahead_s=self.proactive_lookahead_s,
-                route_margin=self.proactive_route_margin,
-            )
+            raise NotImplementedError("Proactive routing is team task 1; see docs/TASK_1_ROUTING.md")
         raise ValueError(
-            "routing mode must be 'flooding', 'relay', 'probabilistic', or 'proactive'"
+            "routing mode must be 'flooding', 'relay', or 'probabilistic'"
         )

@@ -1,12 +1,14 @@
-Drone Awareness Mesh Project Summary
+Drone Awareness Mesh — Reduced Team Foundation
 
-The project is a software testbed for a resilient awareness network of simulated
-drones. Independent companion processes share position and velocity over a LoRa
-RF model, predict degrading links, select multi-hop relay paths before a direct
-link breaks, and report collision risk. The main demo runs six node processes
-with a live topology dashboard. Flight control is disabled.
+The project currently provides deterministic drone motion scenarios, a modeled
+LoRa radio network, telemetry/CRC handling, basic multi-hop forwarding, neighbor
+state tracking, collision prediction, and simulated avoidance. A single-node
+service and core verification suite are available without hardware.
 
-The tests cover damaged packets, GPS errors, network failures, congestion,
-restarts, and missing commands. The six-node configuration is the validated
-target. Runs with 4 to 16 nodes are supported for scale experiments. Hardware,
-radio-range, GNSS, airframe, and real-flight claims are outside the project scope.
+Three teammate features remain: predictive links/proactive routing, independent
+node processes and mesh orchestration, and the live dashboard/mesh acceptance
+report. See docs/TASK_1_ROUTING.md, docs/TASK_2_NODE_PROCESSES.md, and
+docs/TASK_3_DASHBOARD.md. The current state is in docs/PROJECT_STATE.md.
+
+All previously completed work is preserved on most-updated at a63595d.
+Run make test, make scenario, and make quick to use the foundation.

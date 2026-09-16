@@ -5,14 +5,9 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "drone-sims"
 version = "0.3.0"
-description = "Simulation, live demo, and verification suite for a proactive multi-hop LoRa UAV awareness mesh"
+description = "Core simulation foundation for a team-built LoRa UAV awareness mesh"
 requires-python = ">=3.11"
 dependencies = []
-
-[project.optional-dependencies]
-sitl = ["pymavlink"]
-hardware = ["pymavlink", "pyserial"]
-firmware = ["platformio==6.2.0"]
 
 [project.scripts]
 drone-sims = "drone_sims.cli:main"

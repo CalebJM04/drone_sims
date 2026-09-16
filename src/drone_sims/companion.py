@@ -6,7 +6,6 @@ from typing import Protocol
 
 from .collision import KinematicState, Vec3
 from .mavlink_codec import VelocityCommand
-from .network_awareness import LinkQualityTable, planned_routes, serialize_links, topology_links
 from .planner import PlannerConfig, plan_maneuver
 from .protocol import CrcError, ProtocolError, TelemetryFrame, decode, encode
 from .radio_types import RadioReception
@@ -63,11 +62,6 @@ class CompanionConfig:
     routing_mode: str = "flooding"
     relay_nodes: tuple[int, ...] = ()
     forwarding_probability: float = 0.65
-    nominal_radio_range_m: float = 30.0
-    route_lookahead_s: float = 4.0
-    route_margin: float = 0.90
-    link_warning_margin_m: float = 5.0
-    routing_discovery_interval_packets: int = 5
 
     def __post_init__(self) -> None:
         if not 1 <= self.node_id <= 0xFFFF:
@@ -81,7 +75,6 @@ class CompanionConfig:
             "own_state_timeout_s", "neighbor_expiry_s", "safety_distance_m",
             "horizon_s", "maneuver_duration_s", "maneuver_speed_mps",
             "uncertainty_sigma_multiplier", "vertical_speed_mps",
-            "nominal_radio_range_m", "route_lookahead_s", "link_warning_margin_m",
         ):
             value = getattr(self, name)
             if not math.isfinite(value) or value <= 0:
@@ -102,14 +95,10 @@ class CompanionConfig:
             raise ValueError("packet_ttl must fit in one byte")
         if self.table_capacity <= 0:
             raise ValueError("table_capacity must be positive")
-        if self.routing_mode not in {"flooding", "relay", "probabilistic", "proactive"}:
-            raise ValueError("routing_mode must be flooding, relay, probabilistic, or proactive")
+        if self.routing_mode not in {"flooding", "relay", "probabilistic"}:
+            raise ValueError("routing_mode must be flooding, relay, or probabilistic")
         if not 0.0 <= self.forwarding_probability <= 1.0:
             raise ValueError("forwarding_probability must be in [0, 1]")
-        if not 0.0 < self.route_margin <= 1.0:
-            raise ValueError("route_margin must be in (0, 1]")
-        if self.routing_discovery_interval_packets <= 0:
-            raise ValueError("routing_discovery_interval_packets must be positive")
 
 
 @dataclass(slots=True)
@@ -157,16 +146,11 @@ class CompanionService:
         self.radio = radio
         self.table = NeighborTable(config.table_capacity)
         self.tracker = AlphaBetaTracker()
-        self.link_quality = LinkQualityTable(config.telemetry_interval_s)
         self.routing = RoutingPolicy(
             mode=config.routing_mode,
             relay_nodes=config.relay_nodes,
             forwarding_probability=config.forwarding_probability,
             seed=config.boot_id,
-            proactive_range_m=config.nominal_radio_range_m,
-            proactive_lookahead_s=config.route_lookahead_s,
-            proactive_route_margin=config.route_margin,
-            discovery_interval_packets=config.routing_discovery_interval_packets,
         )
         self.stats = CompanionStats()
         self.sequence = 0
@@ -203,7 +187,6 @@ class CompanionService:
 
         self.table.expire(monotonic_s, self.config.neighbor_expiry_s)
         self.tracker.expire(monotonic_s, self.config.neighbor_expiry_s)
-        self.link_quality.expire(monotonic_s, self.config.neighbor_expiry_s)
         self._seen = {
             packet_id: seen_at for packet_id, seen_at in self._seen.items()
             if monotonic_s - seen_at <= self.config.neighbor_expiry_s
@@ -264,16 +247,7 @@ class CompanionService:
         received_at: float,
         mission_time_s: float,
     ) -> None:
-        if isinstance(reception, RadioReception):
-            payload = reception.payload
-            immediate_sender = reception.sender_id
-            rssi_dbm = reception.rssi_dbm
-            snr_db = reception.snr_db
-        else:
-            payload = reception
-            immediate_sender = None
-            rssi_dbm = None
-            snr_db = None
+        payload = reception.payload if isinstance(reception, RadioReception) else reception
         try:
             frame = decode(payload)
         except CrcError:
@@ -284,16 +258,6 @@ class CompanionService:
             return
         if frame.source == self.config.node_id:
             return
-        if immediate_sender is None and frame.hops == 0:
-            immediate_sender = frame.source
-        if immediate_sender is not None:
-            self.link_quality.observe(
-                immediate_sender,
-                frame.packet_id,
-                received_at,
-                rssi_dbm=rssi_dbm,
-                snr_db=snr_db,
-            )
         if frame.packet_id in self._seen:
             self.stats.duplicates += 1
             return
@@ -311,12 +275,10 @@ class CompanionService:
             clock_sigma=self.config.clock_sigma_s,
         )
         self.stats.received += 1
-        states = self._network_states(mission_time_s)
         if frame.ttl > 0 and self.routing.should_forward(
             self.config.node_id,
             frame.source,
             frame.sequence,
-            states=states,
             now=mission_time_s,
         ):
             self.radio.send(encode(frame.forwarded()))
@@ -392,32 +354,7 @@ class CompanionService:
         self._active_until = monotonic_s + self.config.maneuver_duration_s
         self.stats.risk_events += 1
 
-    def _network_states(self, mission_time_s: float) -> dict[int, KinematicState]:
-        states = {
-            node_id: track.state.at(mission_time_s)
-            for node_id, track in self.tracker.tracks.items()
-        }
-        if self.own_state is not None:
-            states[self.config.node_id] = self.own_state.at(mission_time_s)
-        return states
-
     def snapshot(self) -> dict[str, object]:
-        states = self._network_states(self._last_mission_time_s)
-        links = topology_links(
-            states,
-            now=self._last_mission_time_s,
-            range_m=self.config.nominal_radio_range_m,
-            lookahead_s=self.config.route_lookahead_s,
-            warning_margin_m=self.config.link_warning_margin_m,
-        )
-        routes = planned_routes(
-            states,
-            source=self.config.node_id,
-            now=self._last_mission_time_s,
-            range_m=self.config.nominal_radio_range_m,
-            lookahead_s=self.config.route_lookahead_s,
-            route_margin=self.config.route_margin,
-        ) if self.config.node_id in states else {}
         return {
             "node_id": self.config.node_id,
             "control_enabled": self.config.control_enabled,
@@ -425,14 +362,9 @@ class CompanionService:
             "own_state_fresh": self._own_state_fresh,
             "neighbors": len(self.table.entries),
             "routing_mode": self.config.routing_mode,
-            "link_quality": self.link_quality.snapshot(self._last_monotonic_s),
-            "topology": {
-                "links": serialize_links(links),
-                "routes": {str(target): path for target, path in routes.items()},
-            },
             "collision_alerts": self._collision_alerts,
             "active_command": asdict(self._active_command) if self._active_command else None,
-            "px4": self.flight_controller.health_snapshot(),
+            "flight_controller": self.flight_controller.health_snapshot(),
             "stats": asdict(self.stats),
         }
 
