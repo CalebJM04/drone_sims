@@ -1,3 +1,5 @@
+# Placeholder for running the mesh with each drone in its own process.
+
 """Team task 2 entrypoint contract. See docs/TASK_2_NODE_PROCESSES.md."""
 from typing import Callable
 

@@ -1,3 +1,5 @@
+# Runs scenarios with different seeds and pulls the results together.
+
 from __future__ import annotations
 
 from concurrent.futures import ProcessPoolExecutor
@@ -25,6 +27,7 @@ def _percentile(values: list[float], percentile: float) -> float | None:
     lower, upper = math.floor(position), math.ceil(position)
     if lower == upper:
         return ordered[lower]
+    # Blend the two nearby values when the percentile lands between them.
     return ordered[lower] + (ordered[upper] - ordered[lower]) * (position - lower)
 
 
@@ -34,6 +37,7 @@ def run_campaign(
     workers: int = 1,
     minimum_separation_m: float = DEFAULT_OPERATIONAL_MINIMUM_SEPARATION_M,
 ) -> dict[str, Any]:
+    # Each scenario gets the same set of seeds for comparison.
     tasks = [(name, seed) for name in names for seed in range(1, seeds + 1)]
     if workers > 1:
         with ProcessPoolExecutor(max_workers=workers) as pool:

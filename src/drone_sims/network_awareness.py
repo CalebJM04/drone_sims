@@ -1,3 +1,5 @@
+# Holds the planned link prediction and route helpers, still TODO.
+
 """Team task 1 contracts. See docs/TASK_1_ROUTING.md."""
 from dataclasses import dataclass
 from .collision import KinematicState

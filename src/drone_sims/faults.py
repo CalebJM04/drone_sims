@@ -1,3 +1,5 @@
+# Defines sensor glitches we can switch on during a sim run.
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -16,4 +18,5 @@ class SensorFault:
     drop_telemetry: bool = False
 
     def active(self, node_id: int, now: float) -> bool:
+        # The fault stops right at end, so back-to-back windows don't overlap.
         return self.node_id == node_id and self.start <= now < self.end

@@ -1,3 +1,5 @@
+# Packs flight commands and position updates into MAVLink messages.
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -8,6 +10,7 @@ class MavlinkUnavailable(RuntimeError):
 
 
 def _common():
+    # Only load pymavlink when we actually need to talk MAVLink.
     try:
         from pymavlink.dialects.v20 import common
     except ImportError as error:
@@ -27,6 +30,7 @@ class VelocityCommand:
 def encode_velocity_command(command: VelocityCommand, time_boot_ms: int, source_system: int = 240) -> bytes:
     common = _common()
     mavlink = common.MAVLink(None, srcSystem=source_system, srcComponent=1)
+    # Tell the flight controller we're only setting velocity here.
     ignore_position_acceleration_yaw = 0b0000110111000111
     message = common.MAVLink_set_position_target_local_ned_message(
         time_boot_ms,
@@ -57,6 +61,7 @@ def encode_global_position(
 ) -> bytes:
     common = _common()
     mavlink = common.MAVLink(None, srcSystem=source_system, srcComponent=1)
+    # MAVLink expects scaled integers for coordinates, heights, and speeds.
     message = common.MAVLink_global_position_int_message(
         time_boot_ms,
         round(latitude_deg * 1e7),

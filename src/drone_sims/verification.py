@@ -1,3 +1,5 @@
+# Runs stress checks and scenario checks, then saves the results for review.
+
 from __future__ import annotations
 
 from dataclasses import asdict
@@ -29,6 +31,7 @@ def protocol_stress(cases: int, seed: int = 401) -> dict[str, Any]:
         )
         raw = encode(TelemetryFrame.from_state(state, sequence=sequence))
         corrupt = bytearray(raw)
+        # Flip one random bit and see if the decoder catches it.
         bit = rng.randrange(len(raw) * 8)
         corrupt[bit // 8] ^= 1 << (bit % 8)
         try:
@@ -154,6 +157,7 @@ def fixed_point_stress(cases: int, seed: int = 403) -> dict[str, Any]:
             if floating.tcpa <= 10:
                 actionable_time_error_ms = max(actionable_time_error_ms, time_error)
                 actionable_distance_error_cm = max(actionable_distance_error_cm, distance_error)
+        # Tiny rounding differences near the cutoff can change the risk result.
         near_boundary = abs(floating.dcpa - 3) < 0.1 or (floating.tcpa is not None and abs(floating.tcpa - 10) < 0.05)
         if not near_boundary:
             compared += 1

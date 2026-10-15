@@ -1,3 +1,5 @@
+# Smooths noisy neighbor updates and adds some breathing room for uncertainty.
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -46,6 +48,7 @@ class AlphaBetaTracker:
         else:
             dt = measurement.timestamp - previous.state.timestamp
             predicted = previous.state.at(measurement.timestamp)
+            # Use the gap between our prediction and the new reading to correct it.
             residual = measurement.position - predicted.position
             filtered_position = predicted.position + residual * self.alpha
             residual_velocity = residual * (self.beta / max(dt, 1e-6))
@@ -110,6 +113,7 @@ def assess_uncertain(
         peer.uncertainty_at(now, prediction_time), own_uncertainty
     )
     margin = sigma_multiplier * relative_uncertainty
+    # Less certain positions get a bigger safety bubble.
     effective = safety_distance + margin
     conservative = assess(
         own,

@@ -1,3 +1,5 @@
+# Placeholder for turning mesh demo results into a dashboard.
+
 """Team task 3 entrypoint contract. See docs/TASK_3_DASHBOARD.md."""
 from pathlib import Path
 

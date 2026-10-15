@@ -1,3 +1,5 @@
+# Sets up the drone layouts and settings for each named test scenario.
+
 from __future__ import annotations
 
 from dataclasses import replace
@@ -20,6 +22,7 @@ def build(name: str, seed: int = 1, *, event_logging: bool = True) -> Simulation
     outages: list[LinkOutage] = []
 
     if name in {"head_on", "no_avoidance", "noisy", "command_loss", "limited_dynamics"}:
+        # These share a layout so we can compare what each changed setting does.
         nodes = [
             Node(1, Vec3(0, 0), Vec3(0, 0), autonomous=name != "no_avoidance"),
             Node(2, Vec3(14, 0), Vec3(-2, 0)),

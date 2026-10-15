@@ -1,3 +1,5 @@
+# Keeps received packet bytes and optional signal info together.
+
 from __future__ import annotations
 
 from dataclasses import dataclass

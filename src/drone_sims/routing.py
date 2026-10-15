@@ -1,3 +1,5 @@
+# Decides which nodes should pass a telemetry packet along.
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -28,6 +30,7 @@ class RoutingPolicy:
         if self.mode == "probabilistic":
             if not 0.0 <= self.forwarding_probability <= 1.0:
                 raise ValueError("forwarding_probability must be in [0, 1]")
+            # Make a repeatable random-looking choice for this node and packet.
             value = (
                 source * 0x9E3779B1
                 ^ sequence * 0x85EBCA77

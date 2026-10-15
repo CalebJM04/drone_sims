@@ -1,3 +1,5 @@
+# Handles command-line options for running scenarios, campaigns, and checks.
+
 from __future__ import annotations
 
 import argparse
@@ -39,6 +41,7 @@ def main(argv: list[str] | None = None) -> int:
         simulation.config.trace_interval = args.trace_interval
         report = simulation.run()
         if args.output:
+            # Save the details too, so we can look back at what happened.
             args.output.parent.mkdir(parents=True, exist_ok=True)
             args.output.write_text(
                 json.dumps({

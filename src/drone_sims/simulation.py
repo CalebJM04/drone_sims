@@ -1,3 +1,5 @@
+# Runs the sim loop and keeps track of radio traffic, movement, and avoidance.
+
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
@@ -128,6 +130,7 @@ class Simulation:
     def run(self) -> dict[str, Any]:
         now, next_risk, next_trace = 0.0, 0.0, 0.0
         ordered_nodes = sorted(self.nodes)
+        # Spread out the first broadcasts so everyone doesn't send at once.
         next_telemetry = {
             node_id: index * self.config.telemetry_interval / len(ordered_nodes)
             for index, node_id in enumerate(ordered_nodes)
@@ -154,6 +157,7 @@ class Simulation:
                 break
             for node in self.nodes.values():
                 if node.target_velocity is not None and node.max_acceleration is not None:
+                    # Ease toward the target instead of changing speed instantly.
                     delta = node.target_velocity - node.velocity
                     delta_speed = delta.norm()
                     max_delta = node.max_acceleration * advance
@@ -195,6 +199,7 @@ class Simulation:
             clock_sigma=self.config.clock_noise_sigma,
         )
         for fault in faults:
+            # Change the reported state while leaving the actual drone alone.
             state = KinematicState(
                 state.node_id,
                 state.position + fault.position_bias,
@@ -314,6 +319,7 @@ class Simulation:
                     )
                     perceived_state = entry.state.at(now)
                 perceived_threats.append(perceived_state)
+                # Compare the drone's estimate with the sim's actual state.
                 true = assess(
                     node.state(now), self.nodes[peer_id].state(now), now=now,
                     safety_distance=self.config.safety_distance,

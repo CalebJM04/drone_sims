@@ -1,3 +1,5 @@
+# Packs drone telemetry into bytes and checks incoming packets for errors.
+
 from __future__ import annotations
 
 from dataclasses import dataclass, replace
@@ -10,6 +12,7 @@ MAGIC = 0xD7
 VERSION = 2
 TYPE_TELEMETRY = 1
 FLAG_EMERGENCY = 0x01
+# Keep the byte order and field sizes the same for every node.
 _BODY = struct.Struct("!BBBBBBHHHIiiihhh")
 _CRC = struct.Struct("!H")
 FRAME_SIZE = _BODY.size + _CRC.size
@@ -103,6 +106,7 @@ def decode(data: bytes) -> TelemetryFrame:
     if len(data) != FRAME_SIZE:
         raise ProtocolError(f"expected {FRAME_SIZE} bytes, received {len(data)}")
     body, received_crc = data[:-2], _CRC.unpack(data[-2:])[0]
+    # Check for damaged data before trusting any of the fields.
     if crc16_ccitt(body) != received_crc:
         raise CrcError("CRC mismatch")
     fields = _BODY.unpack(body)
@@ -128,5 +132,6 @@ def decode(data: bytes) -> TelemetryFrame:
 
 
 def sequence_is_newer(candidate: int, previous: int) -> bool:
+    # Sequence numbers wrap back to zero after 65535.
     difference = (candidate - previous) & 0xFFFF
     return 0 < difference < 0x8000

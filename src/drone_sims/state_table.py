@@ -1,3 +1,5 @@
+# Keeps the latest accepted state for each neighbor and drops expired entries.
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -39,6 +41,7 @@ class NeighborTable:
                     self.rejected_old += 1
                     return False
             elif frame.boot_id in retired:
+                # Don't let a delayed packet bring an old session back.
                 self.rejected_old += 1
                 return False
             else:
@@ -50,6 +53,7 @@ class NeighborTable:
             return False
         old = self.entries.get(frame.source)
         if old is None and len(self.entries) >= self.capacity:
+            # Make room by dropping the neighbor we haven't heard from longest.
             victim = min(self.entries, key=lambda node: self.entries[node].received_at)
             del self.entries[victim]
             self.evictions += 1

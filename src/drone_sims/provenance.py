@@ -1,3 +1,5 @@
+# Saves the code version, seeds, and runtime info alongside our results.
+
 from __future__ import annotations
 
 from datetime import datetime, timezone
@@ -34,6 +36,7 @@ def source_digest() -> str:
             and not any(part.endswith(".egg-info") for part in path.parts)
         )
     digest = hashlib.sha256()
+    # Sort the paths so file discovery order doesn't change the hash.
     for path in sorted(files):
         relative = path.relative_to(PROJECT_ROOT).as_posix().encode("utf-8")
         digest.update(len(relative).to_bytes(4, "big"))

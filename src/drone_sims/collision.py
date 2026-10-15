@@ -1,3 +1,5 @@
+# Does the vector math and checks if two drones are getting too close.
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -74,6 +76,7 @@ def assess(
         return Assessment(False, None, math.inf, math.inf, "future")
     if age > max_age:
         return Assessment(False, None, math.inf, math.inf, "stale")
+    # Bring both states to the same time before comparing them.
     own_now, peer_now = own.at(now), peer.at(now)
     relative_position = own_now.position - peer_now.position
     relative_velocity = own_now.velocity - peer_now.velocity
@@ -82,6 +85,7 @@ def assess(
     if speed2 <= 1e-12:
         risk = distance < safety_distance
         return Assessment(risk, 0.0 if risk else None, distance, distance, "inside" if risk else "parallel")
+    # This is when they'd be closest if both keep their current velocity.
     tcpa = -relative_position.dot(relative_velocity) / speed2
     if tcpa < 0.0:
         return Assessment(False, tcpa, distance, distance, "separating")
@@ -124,6 +128,7 @@ def brute_force_closest_approach(
     horizon: float,
     step: float = 0.002,
 ) -> tuple[float, float]:
+    # Step through it the slow way to double-check the formula.
     count = max(1, math.ceil(horizon / step))
     best_time, best_distance = 0.0, math.inf
     for index in range(count + 1):

@@ -1,3 +1,5 @@
+# Checks collision risk with integer math, like we'd use on a small board.
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -21,6 +23,7 @@ def fixed_point_assess(
     safety_distance_cm: int,
     horizon_ms: int,
 ) -> FixedAssessment:
+    # Work in centimeters so we can keep the calculations as integers.
     pa = [round(value * 100.0) for value in own.position.as_list()]
     pb = [round(value * 100.0) for value in peer.position.as_list()]
     va = [round(value * 100.0) for value in own.velocity.as_list()]
@@ -34,6 +37,7 @@ def fixed_point_assess(
         return FixedAssessment(current_cm < safety_distance_cm, 0 if current_cm < safety_distance_cm else None, current_cm)
     if dot >= 0:
         return FixedAssessment(False, None, current_cm)
+    # Adding half the divisor rounds the closest-approach time to milliseconds.
     tcpa_ms = (-dot * 1000 + speed2 // 2) // speed2
     closest_numerators = [p * 1000 + v * tcpa_ms for p, v in zip(pr, vr)]
     dcpa_cm = math.isqrt(sum(value * value for value in closest_numerators)) // 1000

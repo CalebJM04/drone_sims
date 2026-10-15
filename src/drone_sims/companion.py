@@ -1,3 +1,5 @@
+# Connects a drone's radio updates, collision checks, and flight commands.
+
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
@@ -126,6 +128,7 @@ def global_to_local_ned(
 ) -> Vec3:
     earth_radius_m = 6_378_137.0
     latitude_delta = math.radians(latitude_deg - reference_latitude_deg)
+    # Take the short way around if the coordinates cross the date line.
     longitude_delta_deg = (longitude_deg - reference_longitude_deg + 180.0) % 360.0 - 180.0
     longitude_delta = math.radians(longitude_delta_deg)
     north = earth_radius_m * latitude_delta
@@ -199,6 +202,7 @@ class CompanionService:
         )
         self._own_state_fresh = own_is_fresh
         if not own_is_fresh:
+            # Stop using the maneuver if our own position has gone stale.
             self._active_command = None
             self._active_until = 0.0
             self._collision_alerts = []
@@ -259,6 +263,7 @@ class CompanionService:
         if frame.source == self.config.node_id:
             return
         if frame.packet_id in self._seen:
+            # Relays can send us the same packet more than once.
             self.stats.duplicates += 1
             return
         self._seen[frame.packet_id] = received_at
@@ -266,6 +271,7 @@ class CompanionService:
         if not self.table.update(frame, received_at):
             return
         if previous is not None and previous.boot_id != frame.boot_id:
+            # The peer rebooted, so start its track fresh.
             self.tracker.tracks.pop(frame.source, None)
         self.tracker.update(
             frame.to_state(),

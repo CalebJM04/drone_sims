@@ -1,3 +1,5 @@
+# Simulates radio broadcasts, including delays, dropped packets, and collisions.
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -103,6 +105,7 @@ class RadioMedium:
 
     def _link_lost(self, sender: int, receiver: int) -> bool:
         key = (sender, receiver)
+        # Keep bad links bad for a while to model bursts of packet loss.
         bad = self._burst_bad.get(key, False)
         if bad:
             bad = not (self.rng.random() < self.config.burst_exit)
@@ -126,6 +129,7 @@ class RadioMedium:
         if self.config.channel_access not in {"csma", "aloha"}:
             raise ValueError("channel_access must be 'csma' or 'aloha'")
         if self.config.channel_access == "csma":
+            # Wait out overlapping receptions before trying to send.
             while True:
                 conflicts = [
                     prior
@@ -165,6 +169,7 @@ class RadioMedium:
             if self.config.channel_access == "aloha":
                 for prior in active:
                     if prior.started_at < end and start < prior.ends_at:
+                        # A strong enough signal can win; otherwise both collide.
                         power_delta = reception.received_power_dbm - prior.received_power_dbm
                         if power_delta >= self.config.capture_threshold_db:
                             prior.collided = True

@@ -1,3 +1,5 @@
+# Tries a few possible moves and picks the one with the best clearance score.
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -54,6 +56,7 @@ def plan_maneuver(
         future_z = own.position.z + velocity.z * config.horizon
         feasible = config.min_z <= future_z <= config.max_z
         worst = math.inf
+        # A move needs to account for every threat, not just the nearest one.
         for threat in threats:
             result = assess(
                 KinematicState(own.node_id, own.position, velocity, own.timestamp),
@@ -74,6 +77,7 @@ def plan_maneuver(
                 separation = result.dcpa
             worst = min(worst, separation)
         deviation = (velocity - own.velocity).norm()
+        # Prefer more clearance, with a small penalty for changing velocity.
         score = worst - config.deviation_penalty * deviation if feasible else -math.inf
         evaluated.append(ManeuverCandidate(name, velocity, worst, score, feasible))
     best = max(evaluated, key=lambda candidate: candidate.score)

@@ -1,3 +1,5 @@
+# Handles the timing for dodging a drone and getting back on course.
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -56,10 +58,12 @@ class AvoidanceController:
             return False
         self.threat = threat.node_id
         self.command_sent_at = now
+        # Save this so we can go back to the original flight path later.
         self.original_velocity = own.velocity
         self.planned_velocity = command_velocity
         self.planned_maneuver = maneuver_name
         if rng.random() < self.config.command_loss:
+            # A lost command stays pending until the timeout catches it.
             self.phase = AvoidancePhase.COMMAND_PENDING
             self.execute_at = None
             return True
@@ -84,6 +88,7 @@ class AvoidanceController:
                 self.maneuvers += 1
                 return self.planned_velocity or Vec3(-direction.y, direction.x) * self.config.lateral_speed
         elif self.phase is AvoidancePhase.MANEUVERING and self.finish_at is not None and now >= self.finish_at:
+            # Give it a short break before allowing another maneuver.
             self.phase = AvoidancePhase.COOLDOWN
             self.cooldown_until = now + self.config.cooldown
             return self.original_velocity or Vec3(0.0, 0.0)

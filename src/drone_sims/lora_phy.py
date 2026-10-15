@@ -1,3 +1,5 @@
+# Estimates how long LoRa packets take to send with different radio settings.
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -48,6 +50,7 @@ class LoRaModem:
         return 8 + encoded
 
     def airtime_seconds(self, payload_bytes: int) -> float:
+        # The preamble takes airtime too, even before the actual data starts.
         preamble = (self.preamble_symbols + 4.25) * self.symbol_seconds
         payload = self.payload_symbols(payload_bytes) * self.symbol_seconds
         return preamble + payload
